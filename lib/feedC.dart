@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class FeedController {
   // Filter options
-  final List<String> areas = ['Mirpur', 'Azimpur', 'Tejgaon'];
-  final List<String> grades = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4'];
-  final List<String> subjects = ['Math', 'Science', 'English', 'History'];
+  final List<String> areas = ['Mirpur', 'Azimpur', 'Tejgaon','Dhanmondi','Gulshan','Banani','Farmgate','Kuril'];
+  final List<String> grades = ['Class 1', 'Class 2', 'Class 3', 'Class 4','Class 5','Class 6','Class 7','Class 9','Class 10','Class 11','Class 12'];
+  final List<String> subjects = ['Math', 'Science', 'English', 'History','Biology','Physics','Chemistry','Accounting','English'];
   final List<String> genders = ['Male', 'Female', 'Any'];
 
   // Selected filter values
@@ -17,33 +17,33 @@ class FeedController {
   final List<Map<String, String>> allPosts = [
     {
       'title': 'Math Tutor Needed',
-      'description': 'Looking for a Math tutor in Azimpur for Grade 1.',
+      'description': 'Looking for a Math tutor in Azimpur for Class 1.',
       'area': 'Azimpur',
-      'grade': 'Grade 1',
+      'grade': 'Class 1',
       'subject': 'Math',
       'gender': 'Any',
     },
     {
       'title': 'Science Tutor Wanted',
-      'description': 'Science tutor needed in Mirpur for Grade 3.',
+      'description': 'Science tutor needed in Mirpur for Class 3.',
       'area': 'Mirpur',
-      'grade': 'Grade 3',
+      'grade': 'Class 3',
       'subject': 'Science',
       'gender': 'Female',
     },
     {
       'title': 'English Tutor Required',
-      'description': 'Seeking English tutor in Tejgaon for Grade 2.',
+      'description': 'Seeking English tutor in Tejgaon for Class 2.',
       'area': 'Tejgaon',
-      'grade': 'Grade 2',
+      'grade': 'Class 2',
       'subject': 'English',
       'gender': 'Male',
     },
     {
       'title': 'History Guidance Needed',
-      'description': 'Need a History tutor for Grade 4 in Mirpur.',
-      'area': 'Mirpur',
-      'grade': 'Grade 4',
+      'description': 'Need a History tutor for Class 4 in Kuril.',
+      'area': 'Kuril',
+      'grade': 'Class 4',
       'subject': 'History',
       'gender': 'Any',
     },

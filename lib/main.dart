@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
-import 'login.dart'; // Your login page implementation
-import 'feed.dart'; // Your FeedScreen implementation
+import 'HomePage.dart';
+import 'login.dart';
+import 'feed.dart';
 
 void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    initialRoute: 'login',
-    routes: {
-      'login': (context) => const MyLogin(), // Login page route
-      'feed': (context) => const FeedScreen(), // Feed screen route
-    },
-  ));
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Tutorly',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.purple,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      // Set the initial route
+      home: const HomePage(),
+      routes: {
+        '/login': (context) => const MyLogin(), // Login page route
+        '/feed': (context) => const FeedScreen(), // Feed screen route
+      },
+    );
+  }
 }
