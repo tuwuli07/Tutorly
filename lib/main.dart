@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
       // Set the initial route
       home: const HomePage(),
       routes: {
-        '/login': (context) => const MyLogin(), // Login page route
-        '/feed': (context) => const FeedScreen(), // Feed screen route
+        'login': (context) => const MyLogin(), // Login page route
+        'feed': (context) => const FeedScreen(), // Feed screen route
       },
     );
   }
