@@ -232,6 +232,20 @@ class _MyLoginState extends State<MyLogin> {
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
+                        const SizedBox(height: 10),
+                        // Register Button
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, 'register'); // Navigate to the registration page
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            "Don't have an account? Register here.",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
                       ],
                     ),
                   ),

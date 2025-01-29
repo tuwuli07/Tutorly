@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'HomePage.dart';
 import 'login.dart';
 import 'feed.dart';
+import 'registration.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +24,8 @@ class MyApp extends StatelessWidget {
       home: const HomePage(),
       routes: {
         'login': (context) => const MyLogin(), // Login page route
-        'feed': (context) => const FeedScreen(), // Feed screen route
+        'feed': (context) => const FeedScreen(),
+        'register': (context) => RegistrationPage(),// Feed screen route
       },
     );
   }
