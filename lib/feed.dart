@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'feedC.dart'; // Import the controller
+import 'feedC.dart'; 
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});

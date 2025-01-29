@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_project/login.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -159,6 +160,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           content: Text("Account Created Successfully!"),
                         ),
                       );
+
+                      // Navigate to Login Page after a short delay
+                      Future.delayed(const Duration(seconds: 1), () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => MyLogin()),
+                        );
+                      });
                     } else if (!_agreeToTerms) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -167,6 +176,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       );
                     }
                   },
+
                   child: const Text(
                     "Create Account",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
