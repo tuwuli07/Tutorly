@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'feedC.dart'; 
+import 'feedC.dart';
+import 'profile.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -10,8 +11,8 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
   final FeedController feedController = FeedController();
-  bool showFilters = false; // Controls the visibility of the filters tray
-  int selectedIndex = 0; // Default selected index
+  bool showFilters = false;
+  int selectedIndex = 0;
 
   @override
   void initState() {
@@ -24,7 +25,6 @@ class _FeedScreenState extends State<FeedScreen> {
     feedController.dispose();
     super.dispose();
   }
-
   void openSidebar() {
     showModalBottomSheet(
       context: context,
@@ -84,7 +84,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         ),
                         title: const Text("Settings"),
                         onTap: () {
-                          // Navigate to settings
+                          Navigator.pushReplacementNamed(context, 'settings');
                         },
                       ),
                       const Divider(),
@@ -96,7 +96,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         ),
                         title: const Text("Feedback"),
                         onTap: () {
-                          //feedback
+                          Navigator.pushReplacementNamed(context, 'feedback');
                         },
                       ),
                       const Divider(),
@@ -120,7 +120,7 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar (
           automaticallyImplyLeading: false, // Disable the back button
           toolbarHeight: kToolbarHeight,
           flexibleSpace: Container(
@@ -149,7 +149,13 @@ class _FeedScreenState extends State<FeedScreen> {
                 height: 24,
               ),
               onPressed: () {
-                // Profile action
+                // Navigate to ProfilePage wrapped with Provider
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
               },
             ),
             IconButton(
@@ -487,13 +493,23 @@ class _FeedScreenState extends State<FeedScreen> {
           setState(() {
             selectedIndex = index; // Update the selected index
           });
+
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, 'feed');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, 'message');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, 'notifications');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, 'settings');
+          }
         },
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
               selectedIndex == 0
-                  ? 'lib/icons/home_selected.png' // Icon when selected
-                  : 'lib/icons/home_unselected.png', // Icon when unselected
+                  ? 'lib/icons/home_selected.png'
+                  : 'lib/icons/home_unselected.png',
               width: 24,
               height: 24,
             ),
