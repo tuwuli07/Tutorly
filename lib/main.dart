@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:new_project/feedback.dart';
+import 'message.dart';
 import 'HomePage.dart';
 import 'login.dart';
 import 'feed.dart';
 import 'registration.dart';
+import 'profile.dart';
+import 'settings.dart';
+import 'notifications.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +25,16 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      // Set the initial route
       home: const HomePage(),
       routes: {
-        'login': (context) => const MyLogin(), // Login page route
+        'login': (context) => const MyLogin(),
         'feed': (context) => const FeedScreen(),
-        'register': (context) => RegistrationPage(),// Feed screen route
+        'register': (context) => RegistrationPage(),
+        'profile': (context) => const ProfilePage(),
+        'settings': (context) => const SettingsPage(),
+        'notifications': (context) => const NotificationsPage(),
+        'message' : (context) => const MessagePage(),
+        'feedback' : (context) => const FeedbackPage(),
       },
     );
   }
