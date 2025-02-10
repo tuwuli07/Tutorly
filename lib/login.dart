@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'loginC.dart';
+import 'userTypeSelection.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({super.key});
@@ -233,10 +234,15 @@ class _MyLoginState extends State<MyLogin> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Register Button
+                        // Registration Button Updated
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, 'register'); // Navigate to the registration page
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserTypeSelection()
+                                )
+                            );
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white,
