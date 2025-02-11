@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'stuReg.dart';
 import 'teReg.dart';
+import 'login.dart'; // Import the login page
 
 class UserTypeSelection extends StatefulWidget {
+  const UserTypeSelection({super.key});
+
   @override
   _UserTypeSelectionState createState() => _UserTypeSelectionState();
 }
@@ -64,6 +67,23 @@ class _UserTypeSelectionState extends State<UserTypeSelection> {
                     },
                   ),
                 ],
+              ),
+              SizedBox(height: 40), // Space between cards and text
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyLogin()), // Navigate to login
+                  );
+                },
+                child: Text(
+                  'Or, login instead',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
             ],
           ),
