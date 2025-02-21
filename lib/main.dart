@@ -1,16 +1,26 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:new_project/feedback.dart';
-import 'userTypeSelection.dart';
+import 'user_type_selection.dart';
 import 'message.dart';
 import 'HomePage.dart';
 import 'login.dart';
 import 'feed.dart';
-import 'registration.dart';
 import 'profile.dart';
 import 'settings.dart';
 import 'notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    if (kDebugMode) {
+      print("Firebase already initialized: $e");
+    }
+  }
   runApp(const MyApp());
 }
 
@@ -30,7 +40,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'login': (context) => const MyLogin(),
         'feed': (context) => const FeedScreen(),
-        'register': (context) => RegistrationPage(),
+        'register': (context) => UserTypeSelection(),
         'profile': (context) => const ProfilePage(),
         'settings': (context) => const SettingsPage(),
         'notifications': (context) => const NotificationsPage(),

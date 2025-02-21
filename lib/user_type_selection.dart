@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'stuReg.dart';
-import 'teReg.dart';
-import 'login.dart'; // Import the login page
+import 'stu_reg.dart';
+import 'te_reg.dart';
+import 'login.dart';
 
 class UserTypeSelection extends StatefulWidget {
   const UserTypeSelection({super.key});
 
   @override
-  _UserTypeSelectionState createState() => _UserTypeSelectionState();
+  UserTypeSelectionState createState() => UserTypeSelectionState();
 }
 
-class _UserTypeSelectionState extends State<UserTypeSelection> {
+class UserTypeSelectionState extends State<UserTypeSelection> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
-class TeReg extends StatelessWidget {
+class StuReg extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -9,11 +10,13 @@ class TeReg extends StatelessWidget {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  StuReg({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Teacher Registration'),
+        title: Text('Student Registration'),
         backgroundColor: Color(0xFF7F3FBF),
       ),
       body: Container(
@@ -40,13 +43,13 @@ class TeReg extends StatelessWidget {
               _buildPasswordField(_confirmPasswordController, 'Confirm Password'),
               SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => _submitForm(context), // Pass context for navigation
-                child: Text('Register'),
+                onPressed: () => _submitForm(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Color(0xFF7F3FBF),
                   minimumSize: Size(double.infinity, 50),
-                ),
+                ), // Pass context for navigation
+                child: Text('Register'),
               ),
             ],
           ),
@@ -116,7 +119,9 @@ class TeReg extends StatelessWidget {
 
   void _submitForm(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      print('Student registration successful');
+      if (kDebugMode) {
+        print('Student registration successful');
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MyLogin()), // Navigate to login page

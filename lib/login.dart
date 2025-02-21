@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'loginC.dart';
-import 'userTypeSelection.dart';
+import 'user_type_selection.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({super.key});
 
   @override
-  _MyLoginState createState() => _MyLoginState();
+  MyLoginState createState() => MyLoginState();
 }
 
-class _MyLoginState extends State<MyLogin> {
+class MyLoginState extends State<MyLogin> {
   final LoginController loginC = LoginController();
 
   @override
@@ -49,7 +49,7 @@ class _MyLoginState extends State<MyLogin> {
                         height: 80,
                         width: 120,
                         child: Image(
-                          image: AssetImage('lib/icons/logo.png'), // Custom logo image
+                          image: AssetImage('lib/icons/logo.png'),
                         ),
                       ),
                       const SizedBox(height: 5),
@@ -57,10 +57,8 @@ class _MyLoginState extends State<MyLogin> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Option 1: Student/Parent
                           GestureDetector(
                             onTap: () {
-                              // Handle Student/Parent option
                               setState(() {
                                 loginC.setSelectedRole('Student/Parent');
                               });
@@ -70,7 +68,7 @@ class _MyLoginState extends State<MyLogin> {
                                 Container(
                                   padding: const EdgeInsets.all(5),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Color.fromRGBO(255, 255, 255, 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
                                       color: loginC.selectedRole == 'Student/Parent'
@@ -114,7 +112,7 @@ class _MyLoginState extends State<MyLogin> {
                                 Container(
                                   padding: const EdgeInsets.all(5),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Color.fromRGBO(255, 255, 255, 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
                                       color: loginC.selectedRole == 'Teacher'
@@ -159,7 +157,7 @@ class _MyLoginState extends State<MyLogin> {
                         TextFormField(
                           controller: loginC.emailController,
                           decoration: InputDecoration(
-                            fillColor: Colors.white.withOpacity(0.9),
+                            fillColor: Color.fromRGBO(255, 255, 255, 0.9),
                             filled: true,
                             hintText: 'Email',
                             prefixIcon: const Icon(Icons.email),
@@ -175,7 +173,7 @@ class _MyLoginState extends State<MyLogin> {
                           controller: loginC.passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
-                            fillColor: Colors.white.withOpacity(0.9),
+                            fillColor: Color.fromRGBO(255, 255, 255, 0.9),
                             filled: true,
                             hintText: 'Password',
                             prefixIcon: const Icon(Icons.lock),

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:new_project/login.dart';
 
 class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
   @override
-  _RegistrationPageState createState() => _RegistrationPageState();
+  RegistrationPageState createState() => RegistrationPageState();
 }
 
-class _RegistrationPageState extends State<RegistrationPage> {
+class RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   bool _agreeToTerms = false;
   bool _obscurePassword = true;
@@ -163,6 +165,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                       // Navigate to Login Page after a short delay
                       Future.delayed(const Duration(seconds: 1), () {
+                        if (!context.mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => MyLogin()),
