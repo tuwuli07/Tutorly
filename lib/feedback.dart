@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'profile.dart';
+import 'feedback_c.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -9,6 +10,7 @@ class FeedbackPage extends StatefulWidget {
 }
 
 class _FeedbackPageState extends State<FeedbackPage> {
+  final TextEditingController _feedbackController = TextEditingController();
   int selectedIndex=-1;
 
   void openSidebar() {
@@ -133,11 +135,39 @@ class _FeedbackPageState extends State<FeedbackPage> {
           ),
         ],
       ),
-      body: const Column(
-        children: <Widget>[
-          Text('feedback'),
-
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "We value your feedback!",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _feedbackController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: "Enter your feedback here...",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  FeedbackController.submitFeedback(context, _feedbackController.text);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // Coffee theme button
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                child: const Text("Submit", style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // Consistent alignment

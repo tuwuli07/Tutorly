@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'profileC.dart';
 
@@ -148,8 +150,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Consumer<ProfileController>(
-        builder: (context, profileController, child) {
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: ProfileController().userProfileStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
+            return const Center(child: Text("No profile data found."));
+          }
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -171,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  profileController.username,
+                  userData['username'] ?? 'Unknown User',
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -179,15 +189,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildInfoBox("Account Type", profileController.accountType),
-                const SizedBox(height: 30),
-                _buildInfoBox("Bio", profileController.description),
-                const SizedBox(height: 20),
-                _buildInfoBox("Phone Number", profileController.phoneNumber),
-                const SizedBox(height: 20),
-                _buildInfoBox("Address", profileController.address),
-                const SizedBox(height: 20),
-                _buildInfoBox("Education", profileController.education),
+                _buildInfoBox("Account Type", userData['accountType'] ?? 'N/A'),
+                _buildInfoBox("Bio", userData['description'] ?? 'N/A'),
+                _buildInfoBox("Phone Number", userData['phoneNumber'] ?? 'N/A'),
+                _buildInfoBox("Address", userData['address'] ?? 'N/A'),
+                _buildInfoBox("Education", userData['education'] ?? 'N/A'),
               ],
             ),
           );
@@ -206,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.pushReplacementNamed(context, 'feed'); // or use Navigator.pushNamed if you don't want to replace
           } else if (index == 1) {
             // Navigate to Messages screen (replace with your messages screen route)
-            Navigator.pushReplacementNamed(context, 'messages');
+            Navigator.pushReplacementNamed(context, 'message');
           } else if (index == 2) {
             // Navigate to Notifications screen
             Navigator.pushReplacementNamed(context, 'notifications');

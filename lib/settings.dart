@@ -12,33 +12,6 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   int selectedIndex = 3;
 
-  late TextEditingController _nameController;
-  late TextEditingController _passwordController;
-  late TextEditingController _phoneController;
-  late TextEditingController _addressController;
-  late TextEditingController _educationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController();
-    _passwordController = TextEditingController();
-    _phoneController = TextEditingController();
-    _addressController = TextEditingController();
-    _educationController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    // Dispose of controllers to free up memory
-    _nameController.dispose();
-    _passwordController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _educationController.dispose();
-    super.dispose();
-  }
-
   void openSidebar() {
     showModalBottomSheet(
       context: context,

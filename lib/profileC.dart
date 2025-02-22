@@ -1,17 +1,18 @@
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProfileController extends ChangeNotifier {
-  String username = "XYZ";
-  String accountType = "Account Type";
-  String phoneNumber = "123-456-7890";
-  String address = "123 Coffee St, Brewtown";
-  String education = "Bachelor’s in CSE";
-  String description = "Coffee enthusiast and Flutter developer.";
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  ProfileController();
-  @override
-  void dispose() {
-    // Dispose any resources here if needed, such as streams or controllers.
-    super.dispose();
+  Stream<DocumentSnapshot> get userProfileStream {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      return _firestore.collection("Users").doc(user.uid).snapshots();
+    } else {
+      return const Stream.empty();
+    }
   }
 }

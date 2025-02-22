@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,6 +57,15 @@ class LoginController {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
+
+        FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.uid).set({
+          'username': emailController.text.split('@')[0],
+          'description': 'Empty bio...',
+          'accountType': 'null',
+          'phoneNumber': 'null',
+          'address': 'null',
+          'education': 'null'
+        });
 
         // Close loading indicator
         if (context.mounted) {
