@@ -176,7 +176,7 @@ class _StuFeedScreenState extends State<FeedStu> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Find Tuition',
+                  'Find Tutor',
                   style: TextStyle(
                     color: Colors.indigo,
                     fontSize: 24,

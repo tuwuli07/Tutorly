@@ -90,8 +90,26 @@ class SettingsController {
     try {
       User? user = _auth.currentUser;
       if (user != null) {
-        await _firestore.collection("users").doc(user.uid).update({field: value});
+        String userId = user.uid;
+        DocumentReference userDocRef = _firestore.collection("users").doc(userId);
 
+        // Fetch user roles
+        DocumentSnapshot userSnapshot = await userDocRef.get();
+        if (!userSnapshot.exists) {
+          throw Exception("User document does not exist");
+        }
+        Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+        List<dynamic> roles = List.from(userData['role'] ?? []);
+
+        // Update "users" collection
+        await userDocRef.update({field: value});
+        for (String role in roles) {
+          if (role == "teacher") {
+            await _firestore.collection("teachers").doc(userId).update({field: value});
+          } else if (role == "student") {
+            await _firestore.collection("students").doc(userId).update({field: value});
+          }
+        }
         if (context.mounted) {
           scaffoldMessenger.showSnackBar(
             SnackBar(content: Text("$field updated successfully!"), backgroundColor: Colors.green),

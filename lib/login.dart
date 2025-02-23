@@ -60,7 +60,7 @@ class MyLoginState extends State<MyLogin> {
                           GestureDetector(
                             onTap: () {
                               setState(() {
-                                loginC.setSelectedRole('Student/Parent');
+                                loginC.setSelectedRole('student');
                               });
                             },
                             child: Column(
@@ -71,7 +71,7 @@ class MyLoginState extends State<MyLogin> {
                                     color: Color.fromRGBO(255, 255, 255, 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
-                                      color: loginC.selectedRole == 'Student/Parent'
+                                      color: loginC.selectedRole == 'student'
                                           ? Colors.blue
                                           : Colors.transparent,
                                       width: 2,
@@ -104,7 +104,7 @@ class MyLoginState extends State<MyLogin> {
                             onTap: () {
                               // Handle Teacher option
                               setState(() {
-                                loginC.setSelectedRole('Teacher');
+                                loginC.setSelectedRole('teacher');
                               });
                             },
                             child: Column(
@@ -115,7 +115,7 @@ class MyLoginState extends State<MyLogin> {
                                     color: Color.fromRGBO(255, 255, 255, 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
-                                      color: loginC.selectedRole == 'Teacher'
+                                      color: loginC.selectedRole == 'teacher'
                                           ? Colors.blue
                                           : Colors.transparent,
                                       width: 2,
