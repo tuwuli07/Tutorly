@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
@@ -43,7 +45,7 @@ class StuReg extends StatelessWidget {
               _buildPasswordField(_confirmPasswordController, 'Confirm Password'),
               SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => _submitForm(context),
+                onPressed: () => registerUser(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Color(0xFF7F3FBF),
@@ -116,16 +118,114 @@ class StuReg extends StatelessWidget {
       },
     );
   }
+  Future<void> registerUser(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
 
-  void _submitForm(BuildContext context) {
-    if (_formKey.currentState!.validate()) {
-      if (kDebugMode) {
-        print('Student registration successful');
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MyLogin()), // Navigate to login page
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Firebase Authentication
+      final UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+
+      final User? user = userCredential.user;
+      if (user == null) throw FirebaseAuthException(code: "user-null");
+
+      final userDocRef = FirebaseFirestore.instance.collection("users").doc(user.uid);
+
+      // Check if the user already exists
+      final userSnapshot = await userDocRef.get();
+      final userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+      List<String> roles = userSnapshot.exists && userSnapshot.data()!['role'] is List
+          ? List<String>.from(userSnapshot.data()!['role'])
+          : [];
+
+
+      // Add student role if not present
+      if (!roles.contains("student")) {
+        roles.add("student");
+      }
+
+      // Update Firestore user document
+      await userDocRef.set({
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'username': userData['username'] ?? user.email!.split('@')[0],
+        'description': userData['description'] ?? 'Empty bio...',
+        'phoneNumber': userData['phoneNumber'] ?? 'null',
+        'address': userData['address'] ?? 'null',
+        'education': userData['education'] ?? 'null',
+        'role': roles.isEmpty ? ["student"] : FieldValue.arrayUnion(["student"]),
+      }, SetOptions(merge: true));
+
+      // Save student-specific data
+      await FirebaseFirestore.instance.collection("students").doc(user.uid).set({
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'username': userData['username'] ?? user.email!.split('@')[0],
+        'description': userData['description'] ?? 'Empty bio...',
+        'phoneNumber': userData['phoneNumber'] ?? 'null',
+        'address': userData['address'] ?? 'null',
+        'education': userData['education'] ?? 'null',
+      });
+
+      // Close loading indicator
+      if (context.mounted) Navigator.pop(context);
+
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Student registered successfully!'), backgroundColor: Colors.green),
+        );
+      }
+
+      // Navigate to login screen
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyLogin()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) Navigator.pop(context);
+
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = 'An account already exists with this email.';
+          break;
+        case 'weak-password':
+          errorMessage = 'Password must be at least 6 characters.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'The email address is invalid.';
+          break;
+        default:
+          errorMessage = 'An error occurred. Please try again.';
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('An error occurred. Please try again later.'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 }

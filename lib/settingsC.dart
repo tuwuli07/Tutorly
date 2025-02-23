@@ -19,6 +19,18 @@ class SettingsController {
       },
     );
   }
+  static Future<void> editBio(BuildContext context) async {
+    _showEditDialog(
+      context,
+      "Edit Bio",
+      "Enter your new bio",
+          (newBio) async {
+        if (newBio != null && newBio.isNotEmpty) {
+          await _updateFirestoreData(context, "description", newBio);
+        }
+      },
+    );
+  }
 
   static Future<void> editPassword(BuildContext context) async {
     _showEditDialog(
@@ -78,7 +90,7 @@ class SettingsController {
     try {
       User? user = _auth.currentUser;
       if (user != null) {
-        await _firestore.collection("Users").doc(user.uid).update({field: value});
+        await _firestore.collection("users").doc(user.uid).update({field: value});
 
         if (context.mounted) {
           scaffoldMessenger.showSnackBar(

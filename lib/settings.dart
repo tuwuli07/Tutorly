@@ -202,6 +202,13 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           settingsCard(
+            Icons.book,
+            "Change Bio",
+                () {
+              SettingsController.editBio(context);
+            },
+          ),
+          settingsCard(
             Icons.lock,
             "Change Password",
             () {

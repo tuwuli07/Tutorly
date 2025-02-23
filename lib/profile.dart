@@ -159,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
             return const Center(child: Text("No profile data found."));
           }
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          var userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -189,7 +189,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildInfoBox("Account Type", userData['accountType'] ?? 'N/A'),
+                _buildInfoBox(
+                  "Account Type",
+                  (userData['role'] is List)
+                      ? (userData['role'] as List).join(', ')
+                      : userData['role'] ?? 'N/A',
+                ),
                 _buildInfoBox("Bio", userData['description'] ?? 'N/A'),
                 _buildInfoBox("Phone Number", userData['phoneNumber'] ?? 'N/A'),
                 _buildInfoBox("Address", userData['address'] ?? 'N/A'),

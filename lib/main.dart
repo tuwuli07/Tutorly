@@ -11,6 +11,7 @@ import 'settings.dart';
 import 'notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'feed_stu.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'login': (context) => const MyLogin(),
         'feed': (context) => const FeedScreen(),
+        'stu_feed': (context) => const FeedStu(),
         'register': (context) => UserTypeSelection(),
         'profile': (context) => const ProfilePage(),
         'settings': (context) => const SettingsPage(),

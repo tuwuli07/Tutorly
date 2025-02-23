@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'feed.dart'; // Import the feed screen
+import 'feed.dart';
+import 'feed_stu.dart';
 
 class LoginController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -58,14 +59,13 @@ class LoginController {
           password: passwordController.text.trim(),
         );
 
-        FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.uid).set({
-          'username': emailController.text.split('@')[0],
-          'description': 'Empty bio...',
-          'accountType': 'null',
-          'phoneNumber': 'null',
-          'address': 'null',
-          'education': 'null'
-        });
+        final User? user = userCredential.user;
+        if (user == null) throw FirebaseAuthException(code: "user-null");
+
+        // Fetch user data from Firestore
+        final userDocRef = FirebaseFirestore.instance.collection("users").doc(user.uid);
+        final userSnapshot = await userDocRef.get();
+
 
         // Close loading indicator
         if (context.mounted) {

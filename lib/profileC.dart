@@ -10,7 +10,7 @@ class ProfileController extends ChangeNotifier {
   Stream<DocumentSnapshot> get userProfileStream {
     User? user = _auth.currentUser;
     if (user != null) {
-      return _firestore.collection("Users").doc(user.uid).snapshots();
+      return _firestore.collection("users").doc(user.uid).snapshots();
     } else {
       return const Stream.empty();
     }
