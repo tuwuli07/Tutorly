@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile.dart';
 
 class NotificationsPage extends StatefulWidget{
@@ -9,7 +12,55 @@ class NotificationsPage extends StatefulWidget{
 }
 class _NotificationsPageState extends State<NotificationsPage> {
   int selectedIndex = 2;
+  Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
 
+      if (user == null) {
+        if (kDebugMode) {
+          print("No user logged in.");
+        }
+        return;
+      }
+
+      DocumentSnapshot userSnapshot =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (!userSnapshot.exists) {
+        if (kDebugMode) {
+          print("User data not found.");
+        }
+        return;
+      }
+
+      final userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+      List<dynamic> roles = List.from(userData['role'] ?? []);
+
+      if (roles.isNotEmpty) {
+        String userRole = roles.first.toString(); // Convert to string
+        navigateToFeed(context, userRole);
+      } else {
+        if (kDebugMode) {
+          print("No role assigned to user.");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user role: $e");
+      }
+    }
+  }
+  void navigateToFeed(BuildContext context, String role) {
+    if (role == "student") {
+      Navigator.pushReplacementNamed(context, 'stu_feed');
+    } else if (role == "teacher") {
+      Navigator.pushReplacementNamed(context, 'feed');
+    } else {
+      if (kDebugMode) {
+        print("Unknown role: $role");
+      }
+    }
+  }
   void openSidebar() {
     showModalBottomSheet(
       context: context,
@@ -159,8 +210,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           });
 
           if (index == 0) {
-            // Navigate to Home screen (replace with your home screen route)
-            Navigator.pushReplacementNamed(context, 'feed'); // or use Navigator.pushNamed if you don't want to replace
+            fetchUserRoleAndNavigate(context);
           } else if (index == 1) {
             // Navigate to Messages screen (replace with your messages screen route)
             Navigator.pushReplacementNamed(context, 'message');

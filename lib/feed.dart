@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'feedC.dart';
 import 'profile.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -13,6 +16,55 @@ class _FeedScreenState extends State<FeedScreen> {
   final FeedController feedController = FeedController();
   bool showFilters = false;
   int selectedIndex = 0;
+  Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        if (kDebugMode) {
+          print("No user logged in.");
+        }
+        return;
+      }
+
+      DocumentSnapshot userSnapshot =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (!userSnapshot.exists) {
+        if (kDebugMode) {
+          print("User data not found.");
+        }
+        return;
+      }
+
+      final userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+      List<dynamic> roles = List.from(userData['role'] ?? []);
+
+      if (roles.isNotEmpty) {
+        String userRole = roles.first.toString(); // Convert to string
+        navigateToFeed(context, userRole);
+      } else {
+        if (kDebugMode) {
+          print("No role assigned to user.");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user role: $e");
+      }
+    }
+  }
+  void navigateToFeed(BuildContext context, String role) {
+    if (role == "student") {
+      Navigator.pushReplacementNamed(context, 'stu_feed');
+    } else if (role == "teacher") {
+      Navigator.pushReplacementNamed(context, 'feed');
+    } else {
+      if (kDebugMode) {
+        print("Unknown role: $role");
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -495,7 +547,7 @@ class _FeedScreenState extends State<FeedScreen> {
           });
 
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, 'feed');
+            fetchUserRoleAndNavigate(context);
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, 'message');
           } else if (index == 2) {

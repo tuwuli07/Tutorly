@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'feed_stuC.dart';
+import 'post_create.dart';
 import 'profile.dart';
 
 class FeedStu extends StatefulWidget {
@@ -11,13 +15,60 @@ class FeedStu extends StatefulWidget {
 
 class _StuFeedScreenState extends State<FeedStu> {
   final StuFeedController feedController = StuFeedController();
-  bool showFilters = false;
   int selectedIndex = 0;
+  Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        if (kDebugMode) {
+          print("No user logged in.");
+        }
+        return;
+      }
+
+      DocumentSnapshot userSnapshot =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (!userSnapshot.exists) {
+        if (kDebugMode) {
+          print("User data not found.");
+        }
+        return;
+      }
+
+      final userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+      List<dynamic> roles = List.from(userData['role'] ?? []);
+
+      if (roles.isNotEmpty) {
+        String userRole = roles.first.toString(); // Convert to string
+        navigateToFeed(context, userRole);
+      } else {
+        if (kDebugMode) {
+          print("No role assigned to user.");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user role: $e");
+      }
+    }
+  }
+  void navigateToFeed(BuildContext context, String role) {
+    if (role == "student") {
+      Navigator.pushReplacementNamed(context, 'stu_feed');
+    } else if (role == "teacher") {
+      Navigator.pushReplacementNamed(context, 'feed');
+    } else {
+      if (kDebugMode) {
+        print("Unknown role: $role");
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    feedController.initFilters();
   }
 
   @override
@@ -169,7 +220,6 @@ class _StuFeedScreenState extends State<FeedStu> {
           ]),
       body: Column(
         children: [
-          // "Find Tuition" Row
           Padding(
             padding: const EdgeInsets.all(5),
             child: Row(
@@ -183,308 +233,19 @@ class _StuFeedScreenState extends State<FeedStu> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: Image.asset(
-                    'lib/icons/filter.png',
-                    height: 40,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      showFilters = !showFilters; // Toggle filter tray
-                    });
-                  },
-                ),
               ],
             ),
           ),
-          // Filter Tray
-          if (showFilters)
-            Container(
-              margin:
-              const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-              padding: const EdgeInsets.all(10.0),
-              decoration: BoxDecoration(
-                color: Colors
-                    .lightBlue.shade50, // Background color for the filter tray
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey
-                        .withOpacity(0.5), // Shadow color with transparency
-                    spreadRadius: 0.5, // Spread radius
-                    blurRadius: 5, // Blur radius
-                    offset: const Offset(
-                        0, 5), // Position: horizontal (0), vertical (3)
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // First Row: Area and Class
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            value: feedController.selectedArea,
-                            hint: const Row(
-                              children: [
-                                SizedBox(width: 5),
-                                Text('Select Area'),
-                              ],
-                            ),
-                            icon: Image.asset(
-                              'lib/icons/dropdown.png',
-                              height: 10,
-                            ),
-                            decoration:
-                            const InputDecoration.collapsed(hintText: ''),
-                            items: feedController.areas.map((area) {
-                              return DropdownMenuItem(
-                                value: area,
-                                child: Text(area),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                feedController.selectedArea = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            value: feedController.selectedGrade,
-                            hint: const Row(
-                              children: [
-                                SizedBox(width: 5),
-                                Text('Select Class'),
-                              ],
-                            ),
-                            icon: Image.asset(
-                              'lib/icons/dropdown.png',
-                              height: 10,
-                            ),
-                            decoration:
-                            const InputDecoration.collapsed(hintText: ''),
-                            items: feedController.grades.map((grade) {
-                              return DropdownMenuItem(
-                                value: grade,
-                                child: Text(grade),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                feedController.selectedGrade = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  // Second Row: Subject and Gender
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            value: feedController.selectedSubject,
-                            hint: const Row(
-                              children: [
-                                SizedBox(width: 5),
-                                Text('Select Subject'),
-                              ],
-                            ),
-                            icon: Image.asset(
-                              'lib/icons/dropdown.png',
-                              height: 10,
-                            ),
-                            decoration:
-                            const InputDecoration.collapsed(hintText: ''),
-                            items: feedController.subjects.map((subject) {
-                              return DropdownMenuItem(
-                                value: subject,
-                                child: Text(subject),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                feedController.selectedSubject = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            value: feedController.selectedGender,
-                            hint: const Row(
-                              children: [
-                                SizedBox(width: 5),
-                                Text('Select Gender'),
-                              ],
-                            ),
-                            icon: Image.asset(
-                              'lib/icons/dropdown.png',
-                              height: 10,
-                            ),
-                            decoration:
-                            const InputDecoration.collapsed(hintText: ''),
-                            items: feedController.genders.map((gender) {
-                              return DropdownMenuItem(
-                                value: gender,
-                                child: Text(gender),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                feedController.selectedGender = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Apply and Clear Buttons
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            feedController.applyFilters();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 8), // Reduce padding
-                          minimumSize:
-                          const Size(70, 30), // Set a smaller minimum size
-                          textStyle:
-                          const TextStyle(fontSize: 14), // Adjust font size
-                        ),
-                        child: const Text('Apply'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            feedController.clearFilters();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 8), // Reduce padding
-                          minimumSize:
-                          const Size(70, 30), // Set a smaller minimum size
-                          textStyle:
-                          const TextStyle(fontSize: 14), // Adjust font size
-                        ),
-                        child: const Text('Clear'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          // Tuition Posts Section
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Two posts in a row
-                crossAxisSpacing: 10, // Space between columns
-                mainAxisSpacing: 10, // Space between rows
-                childAspectRatio:
-                2 / 3, // Aspect ratio to make rectangles taller
-              ),
-              itemCount: feedController.filteredPosts.length,
-              itemBuilder: (context, index) {
-                final post = feedController.filteredPosts[index];
-                return Card(
-                  color: Colors.lightBlue.shade50,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post['title']!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          post['description']!,
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.black54),
-                          maxLines: 3, // Limit the description to 3 lines
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Action for post
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.lightBlue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            textStyle: const TextStyle(fontSize: 12),
-                          ),
-                          child: const Text('Apply'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePostPage()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // Consistent alignment
@@ -495,7 +256,7 @@ class _StuFeedScreenState extends State<FeedStu> {
           });
 
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, 'feed');
+            fetchUserRoleAndNavigate(context);
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, 'message');
           } else if (index == 2) {
