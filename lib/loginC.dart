@@ -1,22 +1,29 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'feed.dart'; // Import the feed screen
+import 'feed.dart';
+import 'feed_stu.dart';
 
-class LoginController {
+class LoginController extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? selectedRole;
+  String? _selectedRole;
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  String? get selectedRole => _selectedRole;
+
+  void setSelectedRole(String role) {
+    _selectedRole = role;
+    notifyListeners(); // Notify UI to rebuild
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-  }
-
-  void setSelectedRole(String role) {
-    selectedRole = role;
+    super.dispose();
   }
 
   String? validateEmail(String? value) {
@@ -56,7 +63,38 @@ class LoginController {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
+        if (!context.mounted) return; // Ensure widget is still mounted before proceeding
+        Navigator.pop(context);
 
+        final User? user = userCredential.user;
+        if (user == null) throw FirebaseAuthException(code: "user-null");
+
+        // Fetch user data from Firestore
+        final userDocRef = FirebaseFirestore.instance.collection("users").doc(user.uid);
+        final userSnapshot = await userDocRef.get();
+        if (!context.mounted) return;
+        final userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+        List<dynamic> roles = List.from(userData['role'] ?? []);
+
+        if (roles.isEmpty) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No role assigned. Please contact support.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        if (!roles.contains(selectedRole)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Selected role does not match registered role.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
         // Close loading indicator
         if (context.mounted) {
           Navigator.pop(context);
@@ -70,23 +108,20 @@ class LoginController {
           if (kDebugMode) {
             print('Role selected: $selectedRole');
           }
-
+          Widget feedScreen = _selectedRole == "teacher" ? const FeedScreen() : const FeedStu();
           // Navigate to feed screen and remove all previous routes
           if (context.mounted) {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const FeedScreen()),
+              MaterialPageRoute(builder: (context) => feedScreen),
                   (route) => false,
             );
           }
         }
       } on FirebaseAuthException catch (e) {
         // Close loading indicator
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-
-
+        if (!context.mounted) return;
+        Navigator.pop(context);
         // Show error message
         String errorMessage;
         switch (e.code) {
@@ -105,32 +140,22 @@ class LoginController {
           default:
             errorMessage = 'An error occurred. Please try again.';
         }
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        showErrorSnackbar(context, errorMessage);
       } catch (e) {
-        // Close loading indicator
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-
-
-        // Show general error message
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('An error occurred. Please try again later.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        if (!context.mounted) return;
+        Navigator.pop(context);
+        showErrorSnackbar(context, "An error occurred. Please try again later.");
       }
+    }
+  }
+  void showErrorSnackbar(BuildContext context, String message) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

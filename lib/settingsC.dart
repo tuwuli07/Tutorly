@@ -1,96 +1,171 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SettingsController {
-  // Name editing logic
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   static Future<void> editName(BuildContext context) async {
     _showEditDialog(
       context,
       "Edit Name",
       "Enter your new name",
-          (newName) {
+          (newName) async {
         if (newName != null && newName.isNotEmpty) {
-          // Add logic to save the new name (e.g., API call, local database, etc.)
-          if (kDebugMode) {
-            print("Name updated to: $newName");
-          }
-          _showSuccessSnackbar(context, "Name updated successfully!");
+          await _updateFirestoreData(context, "username", newName);
+        }
+      },
+    );
+  }
+  static Future<void> editBio(BuildContext context) async {
+    _showEditDialog(
+      context,
+      "Edit Bio",
+      "Enter your new bio",
+          (newBio) async {
+        if (newBio != null && newBio.isNotEmpty) {
+          await _updateFirestoreData(context, "description", newBio);
         }
       },
     );
   }
 
-  // Password editing logic
   static Future<void> editPassword(BuildContext context) async {
     _showEditDialog(
       context,
       "Edit Password",
       "Enter your new password",
-          (newPassword) {
+          (newPassword) async {
         if (newPassword != null && newPassword.isNotEmpty) {
-          // Add logic to save the new password
-          if (kDebugMode) {
-            print("Password updated to: $newPassword");
-          }
-          _showSuccessSnackbar(context, "Password updated successfully!");
+          await _updatePassword(context, newPassword);
         }
       },
     );
   }
 
-  // Phone number editing logic
   static Future<void> editPhoneNumber(BuildContext context) async {
     _showEditDialog(
       context,
       "Edit Phone Number",
       "Enter your new phone number",
-          (newPhoneNumber) {
+          (newPhoneNumber) async {
         if (newPhoneNumber != null && newPhoneNumber.isNotEmpty) {
-          // Add logic to save the new phone number
-          if (kDebugMode) {
-            print("Phone number updated to: $newPhoneNumber");
-          }
-          _showSuccessSnackbar(context, "Phone number updated successfully!");
+          await _updateFirestoreData(context, "phoneNumber", newPhoneNumber);
         }
       },
     );
   }
 
-  // Address editing logic
   static Future<void> editAddress(BuildContext context) async {
     _showEditDialog(
       context,
       "Edit Address",
       "Enter your new address",
-          (newAddress) {
+          (newAddress) async {
         if (newAddress != null && newAddress.isNotEmpty) {
-          // Add logic to save the new address
-          if (kDebugMode) {
-            print("Address updated to: $newAddress");
-          }
-          _showSuccessSnackbar(context, "Address updated successfully!");
-        }
-      },
-    );
-  }
-  static Future<void> editEducation(BuildContext context) async {
-    _showEditDialog(
-      context,
-      "Edit Education",
-      "Enter your education level",
-          (newEducation) {
-        if (newEducation != null && newEducation.isNotEmpty) {
-          // Add logic to save the new address
-          if (kDebugMode) {
-            print("Address updated to: $newEducation");
-          }
-          _showSuccessSnackbar(context, "Education updated successfully!");
+          await _updateFirestoreData(context, "address", newAddress);
         }
       },
     );
   }
 
-  // Helper method to show an edit dialog
+  static Future<void> editEducation(BuildContext context) async {
+    _showEditDialog(
+      context,
+      "Edit Education",
+      "Enter your education level",
+          (newEducation) async {
+        if (newEducation != null && newEducation.isNotEmpty) {
+          await _updateFirestoreData(context, "education", newEducation);
+        }
+      },
+    );
+  }
+
+  static Future<void> _updateFirestoreData(BuildContext context, String field, String value) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        String userId = user.uid;
+        DocumentReference userDocRef = _firestore.collection("users").doc(userId);
+
+        // Fetch user roles
+        DocumentSnapshot userSnapshot = await userDocRef.get();
+        if (!userSnapshot.exists) {
+          throw Exception("User document does not exist");
+        }
+        Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>? ?? {};
+        List<dynamic> roles = List.from(userData['role'] ?? []);
+
+        // Update "users" collection
+        await userDocRef.update({field: value});
+        for (String role in roles) {
+          if (role == "teacher") {
+            await _firestore.collection("teachers").doc(userId).update({field: value});
+          } else if (role == "student") {
+            await _firestore.collection("students").doc(userId).update({field: value});
+          }
+        }
+        if (context.mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text("$field updated successfully!"), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text("User not logged in."), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Failed to update $field: $e"), backgroundColor: Colors.red),
+        );
+      }
+      if (kDebugMode) {
+        print("Error updating $field: $e");
+      }
+    }
+  }
+
+  static Future<void> _updatePassword(BuildContext context, String newPassword) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        await user.updatePassword(newPassword);
+
+        if (context.mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text("Password updated successfully!"), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text("User not logged in."), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Failed to update password: $e"), backgroundColor: Colors.red),
+        );
+      }
+      if (kDebugMode) {
+        print("Error updating password: $e");
+      }
+    }
+  }
+
   static void _showEditDialog(
       BuildContext context,
       String title,
@@ -123,17 +198,6 @@ class SettingsController {
           ],
         );
       },
-    );
-  }
-
-  // Helper method to show a success message
-  static void _showSuccessSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.green,
-      ),
     );
   }
 }
