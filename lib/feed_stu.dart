@@ -16,6 +16,18 @@ class FeedStu extends StatefulWidget {
 class _StuFeedScreenState extends State<FeedStu> {
   final StuFeedController feedController = StuFeedController();
   int selectedIndex = 0;
+  Stream<QuerySnapshot>? _postsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set up the posts stream when the widget initializes
+    _postsStream = FirebaseFirestore.instance
+        .collection('posts')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -54,6 +66,7 @@ class _StuFeedScreenState extends State<FeedStu> {
       }
     }
   }
+
   void navigateToFeed(BuildContext context, String role) {
     if (role == "student") {
       Navigator.pushReplacementNamed(context, 'stu_feed');
@@ -67,15 +80,11 @@ class _StuFeedScreenState extends State<FeedStu> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     feedController.dispose();
     super.dispose();
   }
+
   void openSidebar() {
     showModalBottomSheet(
       context: context,
@@ -168,6 +177,7 @@ class _StuFeedScreenState extends State<FeedStu> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,7 +231,7 @@ class _StuFeedScreenState extends State<FeedStu> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -236,6 +246,67 @@ class _StuFeedScreenState extends State<FeedStu> {
               ],
             ),
           ),
+          // Post feed - main content
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _postsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off, size: 50, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'No tutor posts available',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Try creating a new post to find tutors',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    var post = snapshot.data!.docs[index];
+                    var postData = post.data() as Map<String, dynamic>;
+
+                    return TutorPostCard(
+                      title: postData['title'] ?? 'No Title',
+                      description: postData['description'] ?? 'No Description',
+                      area: postData['area'] ?? 'Unknown Area',
+                      grade: postData['grade'] ?? 'Unknown Grade',
+                      subject: postData['subject'] ?? 'Unknown Subject',
+                      gender: postData['gender'] ?? 'Any',
+                      timestamp: postData['timestamp'],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -245,7 +316,8 @@ class _StuFeedScreenState extends State<FeedStu> {
             MaterialPageRoute(builder: (context) => const CreatePostPage()),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // Consistent alignment
@@ -310,6 +382,163 @@ class _StuFeedScreenState extends State<FeedStu> {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
+      ),
+    );
+  }
+}
+
+class TutorPostCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final String area;
+  final String grade;
+  final String subject;
+  final String gender;
+  final dynamic timestamp;
+
+  const TutorPostCard({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.area,
+    required this.grade,
+    required this.subject,
+    required this.gender,
+    this.timestamp,
+  });
+
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp == null) return 'Just now';
+
+    if (timestamp is Timestamp) {
+      final DateTime dateTime = timestamp.toDate();
+      final Duration difference = DateTime.now().difference(dateTime);
+
+      if (difference.inDays > 0) {
+        return '${difference.inDays}d ago';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}h ago';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}m ago';
+      } else {
+        return 'Just now';
+      }
+    }
+
+    return 'Just now';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.indigo.shade100,
+                  child: const Icon(Icons.person, color: Colors.indigo),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            "Posted in $area",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Adding time display
+                          Icon(Icons.access_time, size: 12, color: Colors.grey.shade600),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatTimestamp(timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 14),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildInfoChip(subject, Colors.orange.shade100),
+                _buildInfoChip(grade, Colors.green.shade100),
+                _buildInfoChip(gender, Colors.purple.shade100),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to post details
+                    // You can add a route for post details
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Text('View Details - $area'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 12),
       ),
     );
   }

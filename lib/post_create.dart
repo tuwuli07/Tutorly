@@ -32,7 +32,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
               maxLines: 3,
             ),
             SizedBox(height: 10),
-            Expanded(
+            // Using Flexible instead of Expanded
+            Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -54,11 +55,21 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
             SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () => postController.createPost(
-                titleController.text,
-                descriptionController.text,
-                context,
-              ),
+              onPressed: () async {
+                // Call the method to create the post
+                await postController.createPost(
+                  titleController.text,
+                  descriptionController.text,
+                  context,
+                );
+
+                // Clear the text fields after posting
+                titleController.clear();
+                descriptionController.clear();
+
+                // Navigate back to the feed page
+                Navigator.of(context).pop();
+              },
               child: Text("Create Post"),
             ),
           ],

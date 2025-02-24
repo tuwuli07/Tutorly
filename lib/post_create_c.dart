@@ -7,15 +7,25 @@ class CreatePostController {
   String? selectedSubject;
   String? selectedGender;
 
-  final List<String> areas = ['Area 1', 'Area 2', 'Area 3'];
-  final List<String> grades = ['Grade 1', 'Grade 2', 'Grade 3'];
+  final List<String> areas = ['Mirpur', 'Azimpur', 'Tejgaon', 'Dhanmondi'];
+  final List<String> grades = ['Class 1', 'CLass 2', 'Class 3'];
   final List<String> subjects = ['Math', 'Science', 'English'];
   final List<String> genders = ['Male', 'Female', 'Any'];
 
   Future<void> createPost(String title, String description, BuildContext context) async {
+    // Check if title or description is empty
     if (title.isEmpty || description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill all fields")),
+        SnackBar(content: Text("Please fill title and description")),
+      );
+      return;
+    }
+
+    // Check if all dropdowns have been selected
+    if (selectedArea == null || selectedGrade == null ||
+        selectedSubject == null || selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please select all filters")),
       );
       return;
     }
@@ -37,7 +47,7 @@ class CreatePostController {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error creating post: \$e")),
+        SnackBar(content: Text("Error creating post: $e")),
       );
     }
   }

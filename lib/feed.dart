@@ -16,6 +16,19 @@ class _FeedScreenState extends State<FeedScreen> {
   final FeedController feedController = FeedController();
   bool showFilters = false;
   int selectedIndex = 0;
+  Stream<QuerySnapshot>? _postsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    feedController.initFilters();
+    // Set up the posts stream when the widget initializes
+    _postsStream = FirebaseFirestore.instance
+        .collection('posts')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -54,6 +67,7 @@ class _FeedScreenState extends State<FeedScreen> {
       }
     }
   }
+
   void navigateToFeed(BuildContext context, String role) {
     if (role == "student") {
       Navigator.pushReplacementNamed(context, 'stu_feed');
@@ -67,16 +81,11 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    feedController.initFilters();
-  }
-
-  @override
   void dispose() {
     feedController.dispose();
     super.dispose();
   }
+
   void openSidebar() {
     showModalBottomSheet(
       context: context,
@@ -105,7 +114,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   alignment: Alignment.centerLeft,
                   color: Colors.lightBlue.shade50,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.blue),
                     onPressed: () {
@@ -121,7 +130,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     children: [
                       ListTile(
                         leading:
-                            const Icon(Icons.logout, color: Colors.blueAccent),
+                        const Icon(Icons.logout, color: Colors.blueAccent),
                         title: const Text("Logout"),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'login');
@@ -169,10 +178,72 @@ class _FeedScreenState extends State<FeedScreen> {
       },
     );
   }
+
+  // Function to apply for a tuition post
+  Future<void> applyForPost(String postId, Map<String, dynamic> postData) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You need to be logged in to apply')),
+        );
+        return;
+      }
+
+      // Get current user data to include in application
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User profile not found')),
+        );
+        return;
+      }
+
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+      // Create application document
+      await FirebaseFirestore.instance.collection('applications').add({
+        'postId': postId,
+        'teacherId': user.uid,
+        'teacherName': userData['name'] ?? 'Unknown Teacher',
+        'teacherEmail': user.email,
+        'teacherPhone': userData['phone'] ?? 'No phone provided',
+        'studentId': postData['userId'] ?? '',
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'pending', // pending, accepted, rejected
+        'postDetails': {
+          'title': postData['title'] ?? '',
+          'subject': postData['subject'] ?? '',
+          'grade': postData['grade'] ?? '',
+          'area': postData['area'] ?? '',
+        }
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Application submitted successfully!')),
+      );
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error applying for post: $e');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to apply. Please try again later.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar (
+      appBar: AppBar(
           automaticallyImplyLeading: false, // Disable the back button
           toolbarHeight: kToolbarHeight,
           flexibleSpace: Container(
@@ -253,7 +324,7 @@ class _FeedScreenState extends State<FeedScreen> {
           if (showFilters)
             Container(
               margin:
-                  const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+              const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
               padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 color: Colors
@@ -297,7 +368,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               height: 10,
                             ),
                             decoration:
-                                const InputDecoration.collapsed(hintText: ''),
+                            const InputDecoration.collapsed(hintText: ''),
                             items: feedController.areas.map((area) {
                               return DropdownMenuItem(
                                 value: area,
@@ -333,7 +404,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               height: 10,
                             ),
                             decoration:
-                                const InputDecoration.collapsed(hintText: ''),
+                            const InputDecoration.collapsed(hintText: ''),
                             items: feedController.grades.map((grade) {
                               return DropdownMenuItem(
                                 value: grade,
@@ -376,7 +447,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               height: 10,
                             ),
                             decoration:
-                                const InputDecoration.collapsed(hintText: ''),
+                            const InputDecoration.collapsed(hintText: ''),
                             items: feedController.subjects.map((subject) {
                               return DropdownMenuItem(
                                 value: subject,
@@ -412,7 +483,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               height: 10,
                             ),
                             decoration:
-                                const InputDecoration.collapsed(hintText: ''),
+                            const InputDecoration.collapsed(hintText: ''),
                             items: feedController.genders.map((gender) {
                               return DropdownMenuItem(
                                 value: gender,
@@ -446,9 +517,9 @@ class _FeedScreenState extends State<FeedScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 8), // Reduce padding
                           minimumSize:
-                              const Size(70, 30), // Set a smaller minimum size
+                          const Size(70, 30), // Set a smaller minimum size
                           textStyle:
-                              const TextStyle(fontSize: 14), // Adjust font size
+                          const TextStyle(fontSize: 14), // Adjust font size
                         ),
                         child: const Text('Apply'),
                       ),
@@ -465,9 +536,9 @@ class _FeedScreenState extends State<FeedScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 8), // Reduce padding
                           minimumSize:
-                              const Size(70, 30), // Set a smaller minimum size
+                          const Size(70, 30), // Set a smaller minimum size
                           textStyle:
-                              const TextStyle(fontSize: 14), // Adjust font size
+                          const TextStyle(fontSize: 14), // Adjust font size
                         ),
                         child: const Text('Clear'),
                       ),
@@ -478,60 +549,181 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
           // Tuition Posts Section
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Two posts in a row
-                crossAxisSpacing: 10, // Space between columns
-                mainAxisSpacing: 10, // Space between rows
-                childAspectRatio:
-                    2 / 3, // Aspect ratio to make rectangles taller
-              ),
-              itemCount: feedController.filteredPosts.length,
-              itemBuilder: (context, index) {
-                final post = feedController.filteredPosts[index];
-                return Card(
-                  color: Colors.lightBlue.shade50,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _postsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(Icons.search_off, size: 50, color: Colors.grey),
+                        SizedBox(height: 16),
                         Text(
-                          post['title']!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                          'No tuition posts available',
+                          style: TextStyle(
                             fontSize: 16,
+                            color: Colors.grey,
                           ),
                         ),
-                        const SizedBox(height: 5),
+                        SizedBox(height: 8),
                         Text(
-                          post['description']!,
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.black54),
-                          maxLines: 3, // Limit the description to 3 lines
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Action for post
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.lightBlue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            textStyle: const TextStyle(fontSize: 12),
+                          'Check back later for new opportunities',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
                           ),
-                          child: const Text('Apply'),
                         ),
                       ],
                     ),
+                  );
+                }
+
+                // Apply filters if any are selected
+                List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs;
+                if (feedController.selectedArea != null ||
+                    feedController.selectedGrade != null ||
+                    feedController.selectedSubject != null ||
+                    feedController.selectedGender != null) {
+
+                  filteredDocs = filteredDocs.where((doc) {
+                    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+                    bool areaMatch = feedController.selectedArea == null ||
+                        data['area'] == feedController.selectedArea;
+
+                    bool gradeMatch = feedController.selectedGrade == null ||
+                        data['grade'] == feedController.selectedGrade;
+
+                    bool subjectMatch = feedController.selectedSubject == null ||
+                        data['subject'] == feedController.selectedSubject;
+
+                    bool genderMatch = feedController.selectedGender == null ||
+                        data['gender'] == feedController.selectedGender ||
+                        data['gender'] == 'Any';
+
+                    return areaMatch && gradeMatch && subjectMatch && genderMatch;
+                  }).toList();
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Two posts in a row
+                    crossAxisSpacing: 10, // Space between columns
+                    mainAxisSpacing: 10, // Space between rows
+                    childAspectRatio: 2 / 3, // Aspect ratio to make rectangles taller
                   ),
+                  itemCount: filteredDocs.length,
+                  itemBuilder: (context, index) {
+                    var doc = filteredDocs[index];
+                    var postData = doc.data() as Map<String, dynamic>;
+
+                    return Card(
+                      color: Colors.lightBlue.shade50,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              postData['title'] ?? 'No Title',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              postData['description'] ?? 'No Description',
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _buildInfoChip(postData['subject'] ?? 'Subject', Colors.orange.shade100),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                _buildInfoChip(postData['grade'] ?? 'Grade', Colors.green.shade100),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                _buildInfoChip(postData['area'] ?? 'Area', Colors.blue.shade100),
+                              ],
+                            ),
+                            const Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Show confirmation dialog before applying
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Apply for Tuition'),
+                                        content: Text(
+                                            'Are you sure you want to apply for "${postData['title'] ?? 'this tuition'}"?'
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close dialog
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close dialog
+                                              applyForPost(doc.id, postData);
+                                            },
+                                            child: const Text('Apply'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5
+                                  ),
+                                  textStyle: const TextStyle(fontSize: 12),
+                                ),
+                                child: const Text('Apply'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -601,6 +793,20 @@ class _FeedScreenState extends State<FeedScreen> {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 10),
       ),
     );
   }
