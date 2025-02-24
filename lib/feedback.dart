@@ -173,7 +173,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         ),
         actions: [
           IconButton(
-            icon: Image.asset('lib/icons/profile_selected.png', width: 24, height: 24),
+            icon: Image.asset('lib/icons/profile.png', width: 24, height: 24),
             onPressed: () {
               Navigator.push(
                 context,

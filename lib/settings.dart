@@ -247,7 +247,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           settingsCard(
             Icons.person,
-            "Change Name",
+            "Change Username",
             () {
               SettingsController.editName(context);
             },

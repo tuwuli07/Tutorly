@@ -15,38 +15,7 @@ class FeedController {
 
   // All posts (mock data)
   final List<Map<String, String>> allPosts = [
-    {
-      'title': 'Math Tutor Needed',
-      'description': 'Looking for a Math tutor in Azimpur for Class 1.',
-      'area': 'Azimpur',
-      'grade': 'Class 1',
-      'subject': 'Math',
-      'gender': 'Any',
-    },
-    {
-      'title': 'Science Tutor Wanted',
-      'description': 'Science tutor needed in Mirpur for Class 3.',
-      'area': 'Mirpur',
-      'grade': 'Class 3',
-      'subject': 'Science',
-      'gender': 'Female',
-    },
-    {
-      'title': 'English Tutor Required',
-      'description': 'Seeking English tutor in Tejgaon for Class 2.',
-      'area': 'Tejgaon',
-      'grade': 'Class 2',
-      'subject': 'English',
-      'gender': 'Male',
-    },
-    {
-      'title': 'History Guidance Needed',
-      'description': 'Need a History tutor for Class 4 in Kuril.',
-      'area': 'Kuril',
-      'grade': 'Class 4',
-      'subject': 'History',
-      'gender': 'Any',
-    },
+
   ];
 
   // Filtered posts

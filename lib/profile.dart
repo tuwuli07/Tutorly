@@ -230,10 +230,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  userData['username'] ?? 'Unknown User',
+                  "username: ${userData['username'] ?? 'Unknown User'}",
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Name: ${userData['firstName'] ?? 'N/A'} ${userData['lastName'] ?? ''}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
@@ -244,9 +252,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ? (userData['role'] as List).join(', ')
                       : userData['role'] ?? 'N/A',
                 ),
+                const SizedBox(height: 10),
                 _buildInfoBox("Bio", userData['description'] ?? 'N/A'),
+                const SizedBox(height: 10),
                 _buildInfoBox("Phone Number", userData['phoneNumber'] ?? 'N/A'),
+                const SizedBox(height: 10),
                 _buildInfoBox("Address", userData['address'] ?? 'N/A'),
+                const SizedBox(height: 10),
                 _buildInfoBox("Education", userData['education'] ?? 'N/A'),
               ],
             ),
