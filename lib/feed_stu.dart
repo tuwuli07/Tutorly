@@ -285,24 +285,66 @@ class _StuFeedScreenState extends State<FeedStu> {
                     ),
                   );
                 }
+                // Get current user ID
+                String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-                return ListView.builder(
+                // Separate posts into 'My Posts' and 'Other Posts'
+                List<DocumentSnapshot> myPosts = [];
+                List<DocumentSnapshot> otherPosts = [];
+
+                for (var post in snapshot.data!.docs) {
+                  var postData = post.data() as Map<String, dynamic>;
+                  if (postData['userId'] == currentUserId) {
+                    myPosts.add(post);
+                  } else {
+                    otherPosts.add(post);
+                  }
+                }
+                return ListView(
                   padding: const EdgeInsets.all(12),
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    var post = snapshot.data!.docs[index];
-                    var postData = post.data() as Map<String, dynamic>;
-
-                    return TutorPostCard(
-                      title: postData['title'] ?? 'No Title',
-                      description: postData['description'] ?? 'No Description',
-                      area: postData['area'] ?? 'Unknown Area',
-                      grade: postData['grade'] ?? 'Unknown Grade',
-                      subject: postData['subject'] ?? 'Unknown Subject',
-                      gender: postData['gender'] ?? 'Any',
-                      timestamp: postData['timestamp'],
-                    );
-                  },
+                  children: [
+                    if (myPosts.isNotEmpty) ...[
+                      const Text(
+                        "My Posts",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ...myPosts.map((post) {
+                        var postData = post.data() as Map<String, dynamic>;
+                        return TutorPostCard(
+                          title: postData['title'] ?? 'No Title',
+                          description: postData['description'] ?? 'No Description',
+                          area: postData['area'] ?? 'Unknown Area',
+                          grade: postData['grade'] ?? 'Unknown Grade',
+                          subject: postData['subject'] ?? 'Unknown Subject',
+                          gender: postData['gender'] ?? 'Any',
+                          timestamp: postData['timestamp'],
+                          creatorName: "You",
+                        );
+                      }).toList(),
+                      const SizedBox(height: 16),
+                    ],
+                    if (otherPosts.isNotEmpty) ...[
+                      const Text(
+                        "Other's Posts",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ...otherPosts.map((post) {
+                        var postData = post.data() as Map<String, dynamic>;
+                        return TutorPostCard(
+                          title: postData['title'] ?? 'No Title',
+                          description: postData['description'] ?? 'No Description',
+                          area: postData['area'] ?? 'Unknown Area',
+                          grade: postData['grade'] ?? 'Unknown Grade',
+                          subject: postData['subject'] ?? 'Unknown Subject',
+                          gender: postData['gender'] ?? 'Any',
+                          timestamp: postData['timestamp'],
+                          creatorName: postData['creatorName'] ?? 'Unknown', // Add creator's name
+                        );
+                      }).toList(),
+                    ],
+                  ],
                 );
               },
             ),
@@ -387,7 +429,7 @@ class _StuFeedScreenState extends State<FeedStu> {
   }
 }
 
-class TutorPostCard extends StatelessWidget {
+class TutorPostCard extends StatefulWidget {
   final String title;
   final String description;
   final String area;
@@ -395,6 +437,7 @@ class TutorPostCard extends StatelessWidget {
   final String subject;
   final String gender;
   final dynamic timestamp;
+  final String creatorName;
 
   const TutorPostCard({
     super.key,
@@ -405,8 +448,14 @@ class TutorPostCard extends StatelessWidget {
     required this.subject,
     required this.gender,
     this.timestamp,
+    required this.creatorName,
   });
 
+  @override
+  State<TutorPostCard> createState() => _TutorPostCardState();
+}
+
+class _TutorPostCardState extends State<TutorPostCard> {
   String _formatTimestamp(dynamic timestamp) {
     if (timestamp == null) return 'Just now';
 
@@ -453,7 +502,7 @@ class TutorPostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        widget.creatorName,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -462,7 +511,7 @@ class TutorPostCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            "Posted in $area",
+                            "Posted in ${widget.area}",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -473,7 +522,7 @@ class TutorPostCard extends StatelessWidget {
                           Icon(Icons.access_time, size: 12, color: Colors.grey.shade600),
                           const SizedBox(width: 4),
                           Text(
-                            _formatTimestamp(timestamp),
+                            _formatTimestamp(widget.timestamp),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -488,7 +537,14 @@ class TutorPostCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              description,
+              widget.title,
+              style: const TextStyle(fontSize: 15,
+                  fontWeight: FontWeight.bold),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              widget.description,
               style: const TextStyle(fontSize: 14),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -498,9 +554,9 @@ class TutorPostCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildInfoChip(subject, Colors.orange.shade100),
-                _buildInfoChip(grade, Colors.green.shade100),
-                _buildInfoChip(gender, Colors.purple.shade100),
+                _buildInfoChip(widget.subject, Colors.orange.shade100),
+                _buildInfoChip(widget.grade, Colors.green.shade100),
+                _buildInfoChip(widget.gender, Colors.purple.shade100),
               ],
             ),
             const SizedBox(height: 12),
@@ -519,7 +575,7 @@ class TutorPostCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: Text('View Details - $area'),
+                  child: Text('View Details'),
                 ),
               ],
             ),

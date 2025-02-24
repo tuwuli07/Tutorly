@@ -3,21 +3,59 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
-import 'post_create_c.dart';
 
-class CreatePostPage extends StatefulWidget {
-  const CreatePostPage({super.key});
+class DetailsPage extends StatefulWidget {
+  final Map<String, dynamic> postData;
+  final String postId;
 
   @override
-  State<CreatePostPage> createState() => _CreatePostPageState();
+  State<DetailsPage> createState() => _DetailsPageState();
+  const DetailsPage({required this.postData, required this.postId, super.key});
 }
 
-class _CreatePostPageState extends State<CreatePostPage> {
-  final CreatePostController postController = CreatePostController();
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+class _DetailsPageState extends State<DetailsPage> {
+  String studentName = "Unknown Student";
+  String postTimestamp = "Unknown Time";
 
+  @override
+  void initState() {
+    super.initState();
+    fetchStudentNameAndTimestamp();
+  }
+
+  final TextEditingController _messageController = TextEditingController();
   int selectedIndex=-1;
+
+  Future<void> fetchStudentNameAndTimestamp() async {
+    try {
+      String studentId = widget.postData['userId'] ?? '';
+      Timestamp? timestamp = widget.postData['timestamp'];
+
+      if (studentId.isNotEmpty) {
+        DocumentSnapshot studentDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(studentId)
+            .get();
+
+        if (studentDoc.exists) {
+          setState(() {
+            studentName =
+                "${studentDoc['firstName'] ?? 'Unknown'} ${studentDoc['lastName'] ?? ''}".trim();
+            if (studentName.isEmpty) studentName = "Unknown Student";
+          });
+        }
+      }
+
+      if (timestamp != null) {
+        DateTime date = timestamp.toDate();
+        setState(() {
+          postTimestamp = "${date.day}-${date.month}-${date.year} ${date.hour}:${date.minute}";
+        });
+      }
+    } catch (e) {
+      print("Error fetching student details: $e");
+    }
+  }
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -149,97 +187,156 @@ class _CreatePostPageState extends State<CreatePostPage> {
     );
   }
 
+  Future<void> applyForPost() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You need to be logged in to apply')),
+        );
+        return;
+      }
+
+      // Get current user data to include in application
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User profile not found')),
+        );
+        return;
+      }
+
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      String message = _messageController.text.trim();
+
+      if (message.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter a message.")),
+        );
+        return;
+      }
+
+      // Create application document
+      await FirebaseFirestore.instance.collection('applications').add({
+        'postId': widget.postId,
+        'teacherId': user.uid,
+        'teacherName': '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}'.trim().isEmpty ? 'Unknown Teacher' : '${userData['firstName']} ${userData['lastName']}',
+        'teacherEmail': user.email,
+        'teacherPhone': userData['phoneNumber'] ?? 'No phone provided',
+        'studentId': widget.postData['userId'] ?? '',
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'pending', // pending, accepted, rejected
+        'message': message,
+        'postDetails': {
+          'title': widget.postData['title'] ?? '',
+          'subject': widget.postData['subject'] ?? '',
+          'grade': widget.postData['grade'] ?? '',
+          'area': widget.postData['area'] ?? '',
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Application submitted successfully!')),
+      );
+      Navigator.pop(context);
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to apply. Please try again later.')),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: kToolbarHeight,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('lib/icons/banner_top.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('lib/icons/logo.png', height: 40),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Image.asset('lib/icons/profile_selected.png', width: 24, height: 24),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
-              );
-            },
-          ),
-          IconButton(
-            icon: Image.asset('lib/icons/sidebar.png', width: 24, height: 24),
-            onPressed: openSidebar,
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(labelText: "Post Title"),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: descriptionController,
-              decoration: InputDecoration(labelText: "Description"),
-              maxLines: 3,
-            ),
-            SizedBox(height: 10),
-            // Using Flexible instead of Expanded
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    buildFilterDropdown("Select Area", postController.areas, (value) {
-                      setState(() => postController.selectedArea = value);
-                    }),
-                    buildFilterDropdown("Select Class", postController.grades, (value) {
-                      setState(() => postController.selectedGrade = value);
-                    }),
-                    buildFilterDropdown("Select Subject", postController.subjects, (value) {
-                      setState(() => postController.selectedSubject = value);
-                    }),
-                    buildFilterDropdown("Select Gender", postController.genders, (value) {
-                      setState(() => postController.selectedGender = value);
-                    }),
-                  ],
-                ),
+          automaticallyImplyLeading: false, // Disable the back button
+          toolbarHeight: kToolbarHeight,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/icons/banner_top.png'),
+                fit: BoxFit.cover,
               ),
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () async {
-                // Call the method to create the post
-                await postController.createPost(
-                  titleController.text,
-                  descriptionController.text,
+          ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Image.asset(
+                'lib/icons/logo.png', // Replace with your logo image
+                height: 40,
+              ),
+              //const SizedBox(width: 10),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Image.asset(
+                'lib/icons/profile.png',
+                width: 24,
+                height: 24,
+              ),
+              onPressed: () {
+                // Navigate to ProfilePage wrapped with Provider
+                Navigator.push(
                   context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
                 );
-
-                // Clear the text fields after posting
-                titleController.clear();
-                descriptionController.clear();
-
-                // Navigate back to the feed page
-                Navigator.of(context).pop();
               },
-              child: Text("Create Post"),
+            ),
+            IconButton(
+              icon: Image.asset(
+                'lib/icons/sidebar.png',
+                width: 24,
+                height: 24,
+              ),
+              onPressed: openSidebar,
+            ),
+          ]),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Display student name and timestamp
+            Text("Posted by: $studentName",
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text("Posted on: $postTimestamp",
+                style: const TextStyle(fontSize: 14, color: Colors.grey)),
+            const SizedBox(height: 10),
+            Text(widget.postData['description'] ?? 'No Description',
+                style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 10),
+            Text("Subject: ${widget.postData['subject'] ?? 'Unknown'}"),
+            Text("Grade: ${widget.postData['grade'] ?? 'Unknown'}"),
+            Text("Area: ${widget.postData['area'] ?? 'Unknown'}"),
+            Text("Gender: ${widget.postData['gender'] ?? 'Unknown'}"),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _messageController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Enter your message",
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: applyForPost,
+                child: const Text("Apply"),
+              ),
             ),
           ],
         ),
@@ -310,24 +407,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-      ),
-    );
-  }
-
-  Widget buildFilterDropdown(String hint, List<String> options, ValueChanged<String?> onChanged) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400),
-      ),
-      child: DropdownButtonFormField<String>(
-        decoration: InputDecoration.collapsed(hintText: ''),
-        hint: Text(hint),
-        items: options.map((option) => DropdownMenuItem(value: option, child: Text(option))).toList(),
-        onChanged: onChanged,
       ),
     );
   }

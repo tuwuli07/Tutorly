@@ -4,6 +4,7 @@ import 'profile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'details.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -179,65 +180,12 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // Function to apply for a tuition post
-  Future<void> applyForPost(String postId, Map<String, dynamic> postData) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You need to be logged in to apply')),
-        );
-        return;
-      }
-
-      // Get current user data to include in application
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      if (!userDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User profile not found')),
-        );
-        return;
-      }
-
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-      // Create application document
-      await FirebaseFirestore.instance.collection('applications').add({
-        'postId': postId,
-        'teacherId': user.uid,
-        'teacherName': userData['name'] ?? 'Unknown Teacher',
-        'teacherEmail': user.email,
-        'teacherPhone': userData['phone'] ?? 'No phone provided',
-        'studentId': postData['userId'] ?? '',
-        'timestamp': FieldValue.serverTimestamp(),
-        'status': 'pending', // pending, accepted, rejected
-        'postDetails': {
-          'title': postData['title'] ?? '',
-          'subject': postData['subject'] ?? '',
-          'grade': postData['grade'] ?? '',
-          'area': postData['area'] ?? '',
-        }
-      });
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Application submitted successfully!')),
-      );
-
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error applying for post: $e');
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to apply. Please try again later.')),
-      );
+  String formatTimestamp(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      DateTime dateTime = timestamp.toDate();
+      return "${dateTime.day}-${dateTime.month}-${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
     }
+    return "Invalid Date";
   }
 
   @override
@@ -637,90 +585,102 @@ class _FeedScreenState extends State<FeedScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            /// Row for Profile Icon, Username & Timestamp
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Colors.blue.shade100,
+                                  child: Icon(Icons.person, color: Colors.white, size: 20),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded( // Prevents overflow in Row
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        postData['creatorName'] ?? 'Unknown',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // Prevents text overflow
+                                      ),
+                                      Text(
+                                        postData['timestamp'] != null
+                                            ? formatTimestamp(postData['timestamp'])
+                                            : 'Unknown Time',
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            /// Post Title
                             Text(
                               postData['title'] ?? 'No Title',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis, // Prevents overflow
                             ),
+
                             const SizedBox(height: 5),
-                            Text(
-                              postData['description'] ?? 'No Description',
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54
+
+                            /// Post Description
+                            Expanded( // Ensures vertical space is distributed properly
+                              child: Text(
+                                postData['description'] ?? 'No Description',
+                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis, // Prevents text overflow
                               ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
                             ),
+
                             const SizedBox(height: 8),
-                            Row(
+
+                            /// Subject, Grade, Area Chips
+                            Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
                               children: [
                                 _buildInfoChip(postData['subject'] ?? 'Subject', Colors.orange.shade100),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
                                 _buildInfoChip(postData['grade'] ?? 'Grade', Colors.green.shade100),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
                                 _buildInfoChip(postData['area'] ?? 'Area', Colors.blue.shade100),
+                                _buildInfoChip(postData['gender'] ?? 'Gender', Colors.indigoAccent.shade100),
                               ],
                             ),
                             const Spacer(),
+                            /// view details Button
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // Show confirmation dialog before applying
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: const Text('Apply for Tuition'),
-                                        content: Text(
-                                            'Are you sure you want to apply for "${postData['title'] ?? 'this tuition'}"?'
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(); // Close dialog
-                                            },
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(); // Close dialog
-                                              applyForPost(doc.id, postData);
-                                            },
-                                            child: const Text('Apply'),
-                                          ),
-                                        ],
-                                      );
-                                    },
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DetailsPage(postData: postData, postId: doc.id),
+                                    ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   textStyle: const TextStyle(fontSize: 12),
                                 ),
-                                child: const Text('Apply'),
+                                child: const Text('View Details'),
                               ),
                             ),
                           ],
                         ),
+
                       ),
                     );
                   },
@@ -732,7 +692,7 @@ class _FeedScreenState extends State<FeedScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // Consistent alignment
-        currentIndex: selectedIndex, // Track the selected index
+        currentIndex: selectedIndex == -1 ? 0 : selectedIndex,
         onTap: (index) {
           setState(() {
             selectedIndex = index; // Update the selected index
@@ -741,10 +701,13 @@ class _FeedScreenState extends State<FeedScreen> {
           if (index == 0) {
             fetchUserRoleAndNavigate(context);
           } else if (index == 1) {
+            // Navigate to Messages screen (replace with your messages screen route)
             Navigator.pushReplacementNamed(context, 'message');
           } else if (index == 2) {
+            // Navigate to Notifications screen
             Navigator.pushReplacementNamed(context, 'notifications');
           } else if (index == 3) {
+            // Navigate to Settings screen
             Navigator.pushReplacementNamed(context, 'settings');
           }
         },
@@ -752,8 +715,8 @@ class _FeedScreenState extends State<FeedScreen> {
           BottomNavigationBarItem(
             icon: Image.asset(
               selectedIndex == 0
-                  ? 'lib/icons/home_selected.png'
-                  : 'lib/icons/home_unselected.png',
+                  ? 'lib/icons/home_selected.png' // Icon when selected
+                  : 'lib/icons/home_unselected.png', // Icon when unselected
               width: 24,
               height: 24,
             ),
