@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile.dart';
+import 'chat_screen.dart';
 
 class NotificationsPage extends StatefulWidget{
   const NotificationsPage({super.key});
@@ -11,6 +12,7 @@ class NotificationsPage extends StatefulWidget{
   State<NotificationsPage> createState() =>  _NotificationsPageState();
 }
 class _NotificationsPageState extends State<NotificationsPage> {
+  final User? user = FirebaseAuth.instance.currentUser;
   int selectedIndex = 2;
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
     try {
@@ -143,7 +145,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       },
     );
   }
-
+  Stream<QuerySnapshot> getNotifications() {
+    return FirebaseFirestore.instance
+        .collection('notifications')
+        .where('receiverId', isEqualTo: user?.uid)
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,11 +203,43 @@ class _NotificationsPageState extends State<NotificationsPage> {
               onPressed: openSidebar,
             ),
           ]),
-      body: const Column(
-        children: <Widget>[
-          Text('notifications'),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: getNotifications(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        ],
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No new notifications"));
+          }
+
+          return ListView(
+            children: snapshot.data!.docs.map((doc) {
+              var notificationData = doc.data() as Map<String, dynamic>;
+
+              return ListTile(
+                leading: const Icon(Icons.notifications, color: Colors.blue),
+                title: const Text("New Message"),
+                subtitle: Text(notificationData['message']),
+                onTap: () {
+                  // Navigate to chat screen when clicked
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(chatData: {
+                        'chatId': notificationData['chatId'],
+                      }),
+                    ),
+                  );
+
+                  // Remove notification after it is read
+                  FirebaseFirestore.instance.collection('notifications').doc(doc.id).delete();
+                },
+              );
+            }).toList(),
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
