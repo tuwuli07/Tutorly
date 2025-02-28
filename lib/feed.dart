@@ -694,35 +694,70 @@ class _FeedScreenState extends State<FeedScreen> {
 
                             const SizedBox(height: 5),
 
-                            /// Post Description
-                            Expanded( // Ensures vertical space is distributed properly
+                            Expanded(
                               child: Text(
                                 postData['description'] ?? 'No Description',
                                 style: const TextStyle(fontSize: 14, color: Colors.black54),
                                 maxLines: 3,
-                                overflow: TextOverflow.ellipsis, // Prevents text overflow
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
 
                             const SizedBox(height: 8),
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                double availableWidth = constraints.maxWidth;
+                                double usedWidth = 0;
+                                const double chipSpacing = 2;
+                                const double moreChipWidth = 60;
+                                List<Widget> visibleChips = [];
+                                int hiddenCount = 0;
 
-                            Wrap(
-                              spacing: 2,
-                              runSpacing: 4,
-                              children: [
-                                if (postData['subject'] is List) ...[
-                                  ...postData['subject']
-                                      .take(2)
-                                      .map<Widget>((subject) => _buildInfoChip(subject, Colors.orange.shade100))
-                                      .toList(),
-                                  if (postData['subject'].length > 2)
-                                    _buildInfoChip("+${postData['subject'].length - 2} more", Colors.orange.shade100),
-                                ],
-                                _buildInfoChip(postData['grade'] ?? 'Grade', Colors.green.shade100),
-                                _buildInfoChip(postData['version'] ?? 'Version', Colors.teal.shade100),
-                                _buildInfoChip(postData['area'] ?? 'Area', Colors.blue.shade100),
-                                _buildInfoChip(postData['gender'] ?? 'Gender', Colors.indigoAccent.shade100),
-                              ],
+                                void addChip(Widget chip, double chipWidth) {
+                                  if (usedWidth + chipWidth + moreChipWidth > availableWidth) {
+                                    hiddenCount++;
+                                  } else {
+                                    visibleChips.add(chip);
+                                    usedWidth += chipWidth + chipSpacing;
+                                  }
+                                }
+
+                                if (postData['subject'] is List) {
+                                  List<String> subjects = List<String>.from(postData['subject']);
+                                  if (subjects.isNotEmpty) {
+                                    addChip(
+                                      _buildInfoChip(subjects.first, Colors.orange.shade100),
+                                      subjects.first.length * 1.0,
+                                    );
+                                  }
+                                  if (subjects.length > 1) {
+                                    hiddenCount += subjects.length - 1;
+                                  }
+                                }
+
+                                // Other chips
+                                final List<MapEntry<String, Color>> chipData = [
+                                  MapEntry(postData['grade'] ?? 'Grade', Colors.green.shade100),
+                                  MapEntry(postData['version'] ?? 'Version', Colors.teal.shade100),
+                                  MapEntry(postData['area'] ?? 'Area', Colors.blue.shade100),
+                                  MapEntry(postData['gender'] ?? 'Gender', Colors.indigoAccent.shade100),
+                                ];
+
+                                for (var entry in chipData) {
+                                  addChip(_buildInfoChip(entry.key, entry.value), entry.key.length * 2.0);
+                                }
+
+                                // Add "+X more" chip if any were hidden
+                                if (hiddenCount > 0) {
+                                  visibleChips.add(_buildInfoChip("+$hiddenCount more", Colors.orange.shade100));
+                                }
+
+                                return Wrap(
+                                  spacing: 2,
+                                  runSpacing: 4,
+                                  children: visibleChips,
+                                );
+                              },
                             ),
                             const SizedBox(height: 15),
                             /// view details Button

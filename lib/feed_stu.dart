@@ -365,7 +365,7 @@ class _StuFeedScreenState extends State<FeedStu> {
             MaterialPageRoute(builder: (context) => const CreatePostPage()),
           );
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue.shade400,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -502,8 +502,9 @@ class _TutorPostCardState extends State<TutorPostCard> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.indigo.shade100,
-                  child: const Icon(Icons.person, color: Colors.indigo),
+                  radius: 15,
+                  backgroundColor: Colors.blue.shade100,
+                  child: const Icon(Icons.person, color: Colors.indigo, size: 20.0,),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
