@@ -23,7 +23,6 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     feedController.initFilters();
-    // Set up the posts stream when the widget initializes
     _postsStream = FirebaseFirestore.instance
         .collection('posts')
         .orderBy('timestamp', descending: true)
@@ -240,7 +239,6 @@ class _FeedScreenState extends State<FeedScreen> {
           ]),
       body: Column(
         children: [
-          // "Find Tuition" Row
           Padding(
             padding: const EdgeInsets.all(5),
             child: Row(
@@ -268,7 +266,6 @@ class _FeedScreenState extends State<FeedScreen> {
               ],
             ),
           ),
-          // Filter Tray
           if (showFilters)
             Container(
               margin:
@@ -281,17 +278,16 @@ class _FeedScreenState extends State<FeedScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey
-                        .withOpacity(0.5), // Shadow color with transparency
-                    spreadRadius: 0.5, // Spread radius
-                    blurRadius: 5, // Blur radius
+                        .withOpacity(0.5),
+                    spreadRadius: 0.5,
+                    blurRadius: 5,
                     offset: const Offset(
-                        0, 5), // Position: horizontal (0), vertical (3)
+                        0, 5),
                   ),
                 ],
               ),
               child: Column(
                 children: [
-                  // First Row: Area and Class
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -370,7 +366,6 @@ class _FeedScreenState extends State<FeedScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Second Row: Subject and Gender
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -382,34 +377,76 @@ class _FeedScreenState extends State<FeedScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: DropdownButtonFormField<String>(
-                            value: feedController.selectedSubject,
-                            hint: const Row(
+                          child: InkWell(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Select Subjects'),
+                                    content: StatefulBuilder(
+                                      builder: (context, setDialogState) {
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: feedController.subjects.map((subject) {
+                                            return CheckboxListTile(
+                                              title: Text(subject),
+                                              value: feedController.selectedSubjects.contains(subject),
+                                              onChanged: (bool? selected) {
+                                                setDialogState(() {
+                                                  if (selected == true) {
+                                                    feedController.selectedSubjects.add(subject);
+                                                  } else {
+                                                    feedController.selectedSubjects.remove(subject);
+                                                  }
+                                                });
+                                              },
+                                            );
+                                          }).toList(),
+                                        );
+                                      },
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {}); // Update UI after selection
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                SizedBox(width: 5),
-                                Text('Select Subject'),
+                                Flexible(
+                                  child: Text(
+                                    feedController.selectedSubjects.isEmpty
+                                        ? 'Select Subjects'
+                                        : feedController.selectedSubjects.join(', '),
+                                    style: const TextStyle(fontSize: 16),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Image.asset(
+                                  'lib/icons/dropdown.png',
+                                  height: 10,
+                                ),
                               ],
                             ),
-                            icon: Image.asset(
-                              'lib/icons/dropdown.png',
-                              height: 10,
-                            ),
-                            decoration:
-                            const InputDecoration.collapsed(hintText: ''),
-                            items: feedController.subjects.map((subject) {
-                              return DropdownMenuItem(
-                                value: subject,
-                                child: Text(subject),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                feedController.selectedSubject = value;
-                              });
-                            },
                           ),
                         ),
                       ),
+
                       Expanded(
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -448,29 +485,52 @@ class _FeedScreenState extends State<FeedScreen> {
                       ),
                     ],
                   ),
-                  // Apply and Clear Buttons
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: feedController.selectedVersion,
+                            hint: const Row(
+                              children: [
+                                SizedBox(width: 5),
+                                Text('Select Version/Medium'),
+                              ],
+                            ),
+                            icon: Image.asset(
+                              'lib/icons/dropdown.png',
+                              height: 10,
+                            ),
+                            decoration:
+                            const InputDecoration.collapsed(hintText: ''),
+                            items: feedController.versions.map((version) {
+                              return DropdownMenuItem(
+                                value: version,
+                                child: Text(version),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                feedController.selectedVersion = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            feedController.applyFilters();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 8), // Reduce padding
-                          minimumSize:
-                          const Size(70, 30), // Set a smaller minimum size
-                          textStyle:
-                          const TextStyle(fontSize: 14), // Adjust font size
-                        ),
-                        child: const Text('Apply'),
-                      ),
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () {
@@ -482,13 +542,13 @@ class _FeedScreenState extends State<FeedScreen> {
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 8), // Reduce padding
+                              horizontal: 8, vertical: 8),
                           minimumSize:
-                          const Size(70, 30), // Set a smaller minimum size
+                          const Size(70, 30),
                           textStyle:
-                          const TextStyle(fontSize: 14), // Adjust font size
+                          const TextStyle(fontSize: 14),
                         ),
-                        child: const Text('Clear'),
+                        child: const Text('Clear Filters'),
                       ),
                     ],
                   ),
@@ -535,12 +595,12 @@ class _FeedScreenState extends State<FeedScreen> {
                   );
                 }
 
-                // Apply filters if any are selected
                 List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs;
                 if (feedController.selectedArea != null ||
                     feedController.selectedGrade != null ||
-                    feedController.selectedSubject != null ||
-                    feedController.selectedGender != null) {
+                    (feedController.selectedSubjects.isNotEmpty) ||
+                    feedController.selectedGender != null ||
+                  feedController.selectedVersion != null) {
 
                   filteredDocs = filteredDocs.where((doc) {
                     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -550,25 +610,28 @@ class _FeedScreenState extends State<FeedScreen> {
 
                     bool gradeMatch = feedController.selectedGrade == null ||
                         data['grade'] == feedController.selectedGrade;
-
-                    bool subjectMatch = feedController.selectedSubject == null ||
-                        data['subject'] == feedController.selectedSubject;
-
+                    bool subjectMatch = feedController.selectedSubjects.isEmpty ||
+                        (data['subject'] is List
+                            ? (data['subject'] as List).any((subject) => feedController.selectedSubjects.contains(subject.toString()))
+                            : feedController.selectedSubjects.contains(data['subject']?.toString() ?? ""));
                     bool genderMatch = feedController.selectedGender == null ||
                         data['gender'] == feedController.selectedGender ||
                         data['gender'] == 'Any';
 
-                    return areaMatch && gradeMatch && subjectMatch && genderMatch;
+                    bool versionMatch = feedController.selectedVersion == null ||
+                        data['version'] == feedController.selectedVersion;
+
+                    return areaMatch && gradeMatch && subjectMatch && genderMatch && versionMatch;
                   }).toList();
                 }
 
                 return GridView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Two posts in a row
-                    crossAxisSpacing: 10, // Space between columns
-                    mainAxisSpacing: 10, // Space between rows
-                    childAspectRatio: 2 / 3, // Aspect ratio to make rectangles taller
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 2 / 3,
                   ),
                   itemCount: filteredDocs.length,
                   itemBuilder: (context, index) {
@@ -585,7 +648,6 @@ class _FeedScreenState extends State<FeedScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            /// Row for Profile Icon, Username & Timestamp
                             Row(
                               children: [
                                 CircleAvatar(
@@ -620,7 +682,6 @@ class _FeedScreenState extends State<FeedScreen> {
 
                             const SizedBox(height: 5),
 
-                            /// Post Title
                             Text(
                               postData['title'] ?? 'No Title',
                               style: const TextStyle(
@@ -645,18 +706,25 @@ class _FeedScreenState extends State<FeedScreen> {
 
                             const SizedBox(height: 8),
 
-                            /// Subject, Grade, Area Chips
                             Wrap(
-                              spacing: 4,
+                              spacing: 2,
                               runSpacing: 4,
                               children: [
-                                _buildInfoChip(postData['subject'] ?? 'Subject', Colors.orange.shade100),
+                                if (postData['subject'] is List) ...[
+                                  ...postData['subject']
+                                      .take(2)
+                                      .map<Widget>((subject) => _buildInfoChip(subject, Colors.orange.shade100))
+                                      .toList(),
+                                  if (postData['subject'].length > 2)
+                                    _buildInfoChip("+${postData['subject'].length - 2} more", Colors.orange.shade100),
+                                ],
                                 _buildInfoChip(postData['grade'] ?? 'Grade', Colors.green.shade100),
+                                _buildInfoChip(postData['version'] ?? 'Version', Colors.teal.shade100),
                                 _buildInfoChip(postData['area'] ?? 'Area', Colors.blue.shade100),
                                 _buildInfoChip(postData['gender'] ?? 'Gender', Colors.indigoAccent.shade100),
                               ],
                             ),
-                            const Spacer(),
+                            const SizedBox(height: 15),
                             /// view details Button
                             SizedBox(
                               width: double.infinity,

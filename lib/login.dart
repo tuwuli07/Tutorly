@@ -221,20 +221,6 @@ class MyLoginState extends State<MyLogin> {
                         const SizedBox(height: 20),
                         TextButton(
                           onPressed: () {
-                            // Add forgot password logic
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Registration Button Updated
-                        TextButton(
-                          onPressed: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
