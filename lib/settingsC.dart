@@ -6,15 +6,64 @@ import 'package:flutter/material.dart';
 class SettingsController {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static bool _nameSnackbarShown = false;
 
   static Future<void> editName(BuildContext context) async {
+    TextEditingController firstNameController = TextEditingController();
+    TextEditingController lastNameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Name"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstNameController,
+                decoration: const InputDecoration(labelText: "Enter First Name"),
+              ),
+              TextField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: "Enter Last Name"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String newFirstName = firstNameController.text.trim();
+                String newLastName = lastNameController.text.trim();
+
+                if (newFirstName.isNotEmpty) {
+                  await _updateFirestoreData(context, "firstName", newFirstName);
+                }
+                if (newLastName.isNotEmpty) {
+                  await _updateFirestoreData(context, "lastName", newLastName);
+                }
+
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  static Future<void> editUsername(BuildContext context) async {
     _showEditDialog(
       context,
-      "Edit Name",
-      "Enter your new name",
-          (newName) async {
-        if (newName != null && newName.isNotEmpty) {
-          await _updateFirestoreData(context, "username", newName);
+      "Edit Username",
+      "Enter your new username",
+          (newUsername) async {
+        if (newUsername != null && newUsername.isNotEmpty) {
+          await _updateFirestoreData(context, "username", newUsername);
         }
       },
     );
@@ -111,9 +160,18 @@ class SettingsController {
           }
         }
         if (context.mounted) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text("$field updated successfully!"), backgroundColor: Colors.green),
-          );
+          if (field == "firstName" || field == "lastName") {
+            if (!_nameSnackbarShown) {
+              _nameSnackbarShown = true;
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(content: Text("Name updated successfully!"), backgroundColor: Colors.green),
+              );
+            }
+          } else {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text("$field updated successfully!"), backgroundColor: Colors.green),
+            );
+          }
         }
       } else {
         if (context.mounted) {

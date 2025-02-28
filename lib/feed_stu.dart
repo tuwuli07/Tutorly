@@ -21,7 +21,6 @@ class _StuFeedScreenState extends State<FeedStu> {
   @override
   void initState() {
     super.initState();
-    // Set up the posts stream when the widget initializes
     _postsStream = FirebaseFirestore.instance
         .collection('posts')
         .orderBy('timestamp', descending: true)
@@ -236,10 +235,10 @@ class _StuFeedScreenState extends State<FeedStu> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Find Tutor',
+                  'Find Tutors',
                   style: TextStyle(
                     color: Colors.indigo,
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -285,10 +284,8 @@ class _StuFeedScreenState extends State<FeedStu> {
                     ),
                   );
                 }
-                // Get current user ID
                 String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-                // Separate posts into 'My Posts' and 'Other Posts'
                 List<DocumentSnapshot> myPosts = [];
                 List<DocumentSnapshot> otherPosts = [];
 
@@ -316,7 +313,12 @@ class _StuFeedScreenState extends State<FeedStu> {
                           description: postData['description'] ?? 'No Description',
                           area: postData['area'] ?? 'Unknown Area',
                           grade: postData['grade'] ?? 'Unknown Grade',
-                          subject: postData['subject'] ?? 'Unknown Subject',
+                          version: postData['version'] ?? 'Unknown Version',
+                          subject: (postData['subject'] is List)
+                              ? List<String>.from(postData['subject'].map((s) => s.toString()))
+                              : (postData['subject'] is String)
+                              ? [postData['subject']]
+                              : ['Unknown Subject'],
                           gender: postData['gender'] ?? 'Any',
                           timestamp: postData['timestamp'],
                           creatorName: "You",
@@ -337,7 +339,12 @@ class _StuFeedScreenState extends State<FeedStu> {
                           description: postData['description'] ?? 'No Description',
                           area: postData['area'] ?? 'Unknown Area',
                           grade: postData['grade'] ?? 'Unknown Grade',
-                          subject: postData['subject'] ?? 'Unknown Subject',
+                          version: postData['version'] ?? 'Unknown Version',
+                          subject: (postData['subject'] is List)
+                              ? List<String>.from(postData['subject'].map((s) => s.toString()))
+                              : (postData['subject'] is String)
+                              ? [postData['subject']]
+                              : ['Unknown Subject'],
                           gender: postData['gender'] ?? 'Any',
                           timestamp: postData['timestamp'],
                           creatorName: postData['creatorName'] ?? 'Unknown', // Add creator's name
@@ -358,7 +365,7 @@ class _StuFeedScreenState extends State<FeedStu> {
             MaterialPageRoute(builder: (context) => const CreatePostPage()),
           );
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue.shade400,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -434,7 +441,8 @@ class TutorPostCard extends StatefulWidget {
   final String description;
   final String area;
   final String grade;
-  final String subject;
+  final String version;
+  final List<String> subject;
   final String gender;
   final dynamic timestamp;
   final String creatorName;
@@ -447,6 +455,7 @@ class TutorPostCard extends StatefulWidget {
     required this.grade,
     required this.subject,
     required this.gender,
+    required this.version,
     this.timestamp,
     required this.creatorName,
   });
@@ -493,8 +502,9 @@ class _TutorPostCardState extends State<TutorPostCard> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.indigo.shade100,
-                  child: const Icon(Icons.person, color: Colors.indigo),
+                  radius: 15,
+                  backgroundColor: Colors.blue.shade100,
+                  child: const Icon(Icons.person, color: Colors.indigo, size: 20.0,),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -554,31 +564,14 @@ class _TutorPostCardState extends State<TutorPostCard> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildInfoChip(widget.subject, Colors.orange.shade100),
+                ...widget.subject.map((subj) => _buildInfoChip(subj, Colors.orange.shade100)).toList(),
                 _buildInfoChip(widget.grade, Colors.green.shade100),
+                _buildInfoChip(widget.version, Colors.teal.shade200),
                 _buildInfoChip(widget.gender, Colors.purple.shade100),
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to post details
-                    // You can add a route for post details
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Text('View Details'),
-                ),
-              ],
-            ),
+
           ],
         ),
       ),

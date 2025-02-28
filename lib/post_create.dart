@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'profile.dart';
 import 'post_create_c.dart';
 
@@ -172,7 +173,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         ),
         actions: [
           IconButton(
-            icon: Image.asset('lib/icons/profile_selected.png', width: 24, height: 24),
+            icon: Image.asset('lib/icons/profile.png', width: 24, height: 24),
             onPressed: () {
               Navigator.push(
                 context,
@@ -212,9 +213,28 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     buildFilterDropdown("Select Class", postController.grades, (value) {
                       setState(() => postController.selectedGrade = value);
                     }),
-                    buildFilterDropdown("Select Subject", postController.subjects, (value) {
-                      setState(() => postController.selectedSubject = value);
+                    buildFilterDropdown("Select Version", postController.versions, (value) {
+                      setState(() => postController.selectedVersion = value);
                     }),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: MultiSelectDialogField(
+                        items: postController.subjects
+                            .map((subject) => MultiSelectItem<String>(subject, subject))
+                            .toList(),
+                        title: const Text("Select Subjects"),
+                        buttonText: const Text("Select Subjects"),
+                        initialValue: postController.selectedSubjects, // Bind selected values
+                        onConfirm: (values) {
+                          setState(() => postController.selectedSubjects = values);
+                        },
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                      ),
+                    ),
                     buildFilterDropdown("Select Gender", postController.genders, (value) {
                       setState(() => postController.selectedGender = value);
                     }),
@@ -232,11 +252,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   context,
                 );
 
-                // Clear the text fields after posting
                 titleController.clear();
                 descriptionController.clear();
 
-                // Navigate back to the feed page
                 Navigator.of(context).pop();
               },
               child: Text("Create Post"),

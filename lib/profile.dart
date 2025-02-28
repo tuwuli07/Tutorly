@@ -222,29 +222,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.indigo[900],
                   ),
                 ),
-                const SizedBox(height: 20),
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 50, color: Colors.grey),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "username: ${userData['username'] ?? 'Unknown User'}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
+                const SizedBox(height: 5),
+                Image.asset(
+                  'lib/icons/profile.png',
+                  width: 100,
+                  height: 100,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Name: ${userData['firstName'] ?? 'N/A'} ${userData['lastName'] ?? ''}",
+                  "username: ${userData['username'] ?? 'Unknown User'}",
                   style: const TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
+                const SizedBox(height: 20),
+                _buildInfoBox(
+                  "Name",
+                    "${userData['firstName'] ?? 'N/A'} ${userData['lastName'] ?? ''}",
+                ),
+
                 const SizedBox(height: 10),
                 _buildInfoBox(
                   "Account Type",
@@ -353,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          Text(value, style: const TextStyle(fontSize: 16, color: Colors.black54)),
+          Text(value, style: const TextStyle(fontSize: 16, color: Colors.black87)),
         ],
       ),
     );
