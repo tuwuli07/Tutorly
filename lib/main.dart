@@ -10,7 +10,6 @@ import 'profile.dart';
 import 'settings.dart';
 import 'notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'feed_stu.dart';
 
 Future<void> main() async {

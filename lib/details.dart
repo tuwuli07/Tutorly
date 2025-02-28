@@ -3,24 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
+import 'chat_screen.dart';
 
 class DetailsPage extends StatefulWidget {
   final Map<String, dynamic> postData;
   final String postId;
+  const DetailsPage({required this.postData, required this.postId, super.key});
 
   @override
   State<DetailsPage> createState() => _DetailsPageState();
-  const DetailsPage({required this.postData, required this.postId, super.key});
 }
 
 class _DetailsPageState extends State<DetailsPage> {
   String studentName = "Unknown Student";
   String postTimestamp = "Unknown Time";
+  bool hasApplied = false;
+  String chatId = "";
 
   @override
   void initState() {
     super.initState();
     fetchStudentNameAndTimestamp();
+    checkIfApplied();
   }
 
   final TextEditingController _messageController = TextEditingController();
@@ -54,6 +58,24 @@ class _DetailsPageState extends State<DetailsPage> {
       }
     } catch (e) {
       print("Error fetching student details: $e");
+    }
+  }
+  Future<void> checkIfApplied() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    String generatedChatId = "${widget.postData['userId']}_${user.uid}";
+
+    var chatSnapshot = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(generatedChatId)
+        .get();
+
+    if (chatSnapshot.exists) {
+      setState(() {
+        hasApplied = true;
+        chatId = generatedChatId;
+      });
     }
   }
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
@@ -186,7 +208,6 @@ class _DetailsPageState extends State<DetailsPage> {
       },
     );
   }
-
   Future<void> applyForPost() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -212,14 +233,19 @@ class _DetailsPageState extends State<DetailsPage> {
       }
 
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      String message = _messageController.text.trim();
 
-      if (message.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please enter a message.")),
-        );
-        return;
-      }
+      String generatedChatId = "${widget.postData['userId']}_${user.uid}";
+
+      await FirebaseFirestore.instance.collection('chats').doc(generatedChatId).set({
+        'chatId': generatedChatId,
+        'postId': widget.postId,
+        'studentId': widget.postData['userId'],
+        'tutorId': user.uid,
+        'studentName': studentName,
+        'tutorName': '${userData['firstName']} ${userData['lastName']}'.trim(),
+        'lastMessage': '',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
       // Create application document
       await FirebaseFirestore.instance.collection('applications').add({
@@ -230,16 +256,19 @@ class _DetailsPageState extends State<DetailsPage> {
         'teacherPhone': userData['phoneNumber'] ?? 'No phone provided',
         'studentId': widget.postData['userId'] ?? '',
         'timestamp': FieldValue.serverTimestamp(),
-        'status': 'pending', // pending, accepted, rejected
-        'message': message,
+        'status': 'pending',
         'postDetails': {
           'title': widget.postData['title'] ?? '',
           'subject': widget.postData['subject'] ?? '',
+          'version': widget.postData['version'] ?? '',
           'grade': widget.postData['grade'] ?? '',
           'area': widget.postData['area'] ?? '',
         }
       });
-
+      setState(() {
+        hasApplied = true;
+        chatId = generatedChatId;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Application submitted successfully!')),
       );
@@ -322,16 +351,24 @@ class _DetailsPageState extends State<DetailsPage> {
             Text("Area: ${widget.postData['area'] ?? 'Unknown'}"),
             Text("Gender: ${widget.postData['gender'] ?? 'Unknown'}"),
             const SizedBox(height: 20),
-            TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "Enter your message",
+            hasApplied
+                ? ListTile(
+              leading: const Icon(Icons.person, size: 30),
+              title: Text(studentName),
+              trailing: IconButton(
+                icon: const Icon(Icons.message, color: Colors.blue),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ChatScreen(chatData: {'chatId': chatId}),
+                    ),
+                  );
+                },
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
+            )
+            : SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: applyForPost,
