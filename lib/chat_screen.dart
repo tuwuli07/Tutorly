@@ -15,10 +15,12 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
   final TextEditingController _messageController = TextEditingController();
+  Map<String, dynamic>? chatPartnerData;
 
   @override
   void initState() {
     super.initState();
+    fetchChatPartnerDetails();
 
     FirebaseFirestore.instance
         .collection('messages')
@@ -37,7 +39,24 @@ class ChatScreenState extends State<ChatScreen> {
       }
     });
   }
+  void fetchChatPartnerDetails() async {
+    String chatPartnerId = (user?.uid == widget.chatData['studentId'])
+        ? widget.chatData['tutorId']
+        : widget.chatData['studentId'];
 
+    DocumentSnapshot userSnapshot =
+    await FirebaseFirestore.instance.collection('users').doc(chatPartnerId).get();
+
+    if (userSnapshot.exists) {
+      setState(() {
+        chatPartnerData = userSnapshot.data() as Map<String, dynamic>;
+        String firstName = chatPartnerData?['firstName'] ?? '';
+        String lastName = chatPartnerData?['lastName'] ?? '';
+
+        chatPartnerData!['fullName'] = "$firstName $lastName".trim();
+      });
+    }
+  }
   Stream<QuerySnapshot> getMessages() {
     return FirebaseFirestore.instance
         .collection('messages')
@@ -123,7 +142,6 @@ class ChatScreenState extends State<ChatScreen> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     String studentName = widget.chatData['studentName'] ?? "Unknown Student";
@@ -151,6 +169,50 @@ class ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(chatPartnerName),
+        actions: [
+          Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.account_circle_outlined, color: Colors.blue,),
+                onPressed: () {
+                  Scaffold.of(context).openEndDrawer();
+                },
+              );
+            }
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        child: Container(
+          color: Colors.white,
+          child: chatPartnerData == null
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                Center(
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: const AssetImage('lib/icons/profile.png') as ImageProvider,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Function to create white-boxed text fields
+                buildInfoBox("Username", chatPartnerData!['username'] ?? 'Unknown'),
+                buildInfoBox("Name", chatPartnerData!['fullName'] ?? 'Unknown'),
+                buildInfoBox("Bio", chatPartnerData!['description'] ?? 'Unknown'),
+                buildInfoBox("Email", chatPartnerData!['email'] ?? 'Not available'),
+                buildInfoBox("Phone Number", chatPartnerData!['phoneNumber'] ?? 'Not available'),
+                buildInfoBox("Address", chatPartnerData!['address'] ?? 'Not available'),
+                buildInfoBox("Education", chatPartnerData!['education'] ?? 'Not specified'),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -250,6 +312,34 @@ class ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget buildInfoBox(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
       ),
     );
   }

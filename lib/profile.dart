@@ -263,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Consistent alignment
+        type: BottomNavigationBarType.fixed,
         currentIndex: selectedIndex == -1 ? 0 : selectedIndex,
         onTap: (index) {
           setState(() {
@@ -287,8 +287,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           BottomNavigationBarItem(
             icon: Image.asset(
               selectedIndex == 0
-                  ? 'lib/icons/home_selected.png' // Icon when selected
-                  : 'lib/icons/home_unselected.png', // Icon when unselected
+                  ? 'lib/icons/home_selected.png'
+                  : 'lib/icons/home_unselected.png',
               width: 24,
               height: 24,
             ),

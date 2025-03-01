@@ -253,7 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           settingsCard(
-            Icons.person,
+            Icons.account_circle_outlined,
             "Change Username",
             () {
               SettingsController.editUsername(context);
@@ -288,7 +288,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           settingsCard(
-            Icons.people_alt_outlined,
+            Icons.school_outlined,
             "Change Educational Qualification",
                 () {
               SettingsController.editEducation(context);

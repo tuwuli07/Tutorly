@@ -202,7 +202,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
               maxLines: 3,
             ),
             SizedBox(height: 10),
-            // Using Flexible instead of Expanded
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
@@ -216,23 +215,29 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     buildFilterDropdown("Select Version", postController.versions, (value) {
                       setState(() => postController.selectedVersion = value);
                     }),
+                    SizedBox(height: 5),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 0.5),
                       child: MultiSelectDialogField(
                         items: postController.subjects
                             .map((subject) => MultiSelectItem<String>(subject, subject))
                             .toList(),
                         title: const Text("Select Subjects"),
-                        buttonText: const Text("Select Subjects"),
-                        initialValue: postController.selectedSubjects, // Bind selected values
+                        buttonText: Text("Select Subjects",
+                          style: TextStyle(color: Colors.grey.shade800, fontSize: 15.5),
+                        ),
+                        selectedColor: Colors.blue.shade700,
+                        backgroundColor: Colors.white,
+                        initialValue: postController.selectedSubjects,
                         onConfirm: (values) {
                           setState(() => postController.selectedSubjects = values);
                         },
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: Colors.grey.shade400),
                         ),
+                        buttonIcon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade700),
                       ),
                     ),
                     buildFilterDropdown("Select Gender", postController.genders, (value) {
