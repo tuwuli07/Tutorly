@@ -183,19 +183,13 @@ class _StuFeedScreenState extends State<FeedStu> {
       appBar: AppBar (
           automaticallyImplyLeading: false, // Disable the back button
           toolbarHeight: kToolbarHeight,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/icons/banner_top.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Image.asset(
-                'lib/icons/logo.png', // Replace with your logo image
+                'lib/icons/appbar_logo.png', // Replace with your logo image
                 height: 40,
               ),
               //const SizedBox(width: 10),
@@ -220,7 +214,7 @@ class _StuFeedScreenState extends State<FeedStu> {
             ),
             IconButton(
               icon: Image.asset(
-                'lib/icons/sidebar.png',
+                'lib/icons/sidebar_selected.png',
                 width: 24,
                 height: 24,
               ),
@@ -229,22 +223,6 @@ class _StuFeedScreenState extends State<FeedStu> {
           ]),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Find Tutors',
-                  style: TextStyle(
-                    color: Colors.indigo,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
           // Post feed - main content
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
@@ -358,6 +336,7 @@ class _StuFeedScreenState extends State<FeedStu> {
           ),
         ],
       ),
+      backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -489,6 +468,7 @@ class _TutorPostCardState extends State<TutorPostCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.grey.shade50,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(
