@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'main.dart';
 import 'profileC.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -30,7 +31,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int selectedIndex=-1;
+  int selectedIndex = -1;
+  bool isDarkMode = false;
+
   Future<void> fetchUserRoleAndNavigate(BuildContext context) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -69,6 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
+
   void navigateToFeed(BuildContext context, String role) {
     if (role == "student") {
       Navigator.pushReplacementNamed(context, 'stu_feed');
@@ -80,6 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
+
   void openSidebar() {
     showModalBottomSheet(
       context: context,
@@ -89,11 +94,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Align(
           alignment: Alignment.centerRight,
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.65,
-            height: MediaQuery.of(context).size.height,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.65,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height,
+            decoration: BoxDecoration(
+              color: Theme
+                  .of(context)
+                  .brightness == Brightness.dark
+                  ? Colors.black
+                  : Colors.white,
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 5,
@@ -105,10 +120,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  color: Colors.lightBlue.shade50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  color: Theme
+                      .of(context)
+                      .brightness == Brightness.dark
+                      ? Colors.grey.shade900
+                      : Colors.lightBlue.shade50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                    icon: Icon(Icons.arrow_back,
+                        color: Theme
+                            .of(context)
+                            .brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.blue),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -116,11 +141,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.blueAccent),
-                        title: const Text("Logout"),
+                        leading: Icon(Icons.logout,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blueAccent),
+                        title: Text("Logout",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'login');
                         },
@@ -132,23 +171,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 24,
                           height: 24,
                         ),
-                        title: const Text("Settings"),
+                        title: Text("Settings",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'settings');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: Image.asset('lib/icons/sidebar_feedback.png', height: 24, width: 24),
-                        title: const Text("Feedback"),
+                        leading: Image.asset(
+                          'lib/icons/sidebar_feedback.png',
+                          height: 24,
+                          width: 24,
+                        ),
+                        title: Text("Feedback",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'feedback');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: const Icon(Icons.info, color: Colors.blue),
-                        title: const Text("About"),
+                        leading: Icon(
+                          Icons.dark_mode,
+                          color: Theme
+                              .of(context)
+                              .iconTheme
+                              .color,
+                        ),
+                        title: Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            color: Theme
+                                .of(context)
+                                .brightness ==
+                                Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: Provider
+                              .of<ThemeProvider>(context)
+                              .themeMode ==
+                              ThemeMode.dark,
+                          onChanged: (value) {
+                            Provider.of<ThemeProvider>(context, listen: false)
+                                .toggleTheme();
+                          },
+                        ),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(Icons.info,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blue),
+                        title: Text("About",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {},
                       ),
                     ],
@@ -162,10 +265,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
+      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF0F8FF),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: kToolbarHeight,
@@ -185,7 +292,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: Image.asset('lib/icons/profile_selected.png', width: 24, height: 24),
+            icon: Image.asset(
+                'lib/icons/profile_selected.png', width: 24, height: 24),
             onPressed: () {
               Navigator.push(
                 context,
@@ -205,7 +313,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
+          if (!snapshot.hasData || snapshot.data == null ||
+              !snapshot.data!.exists) {
             return const Center(child: Text("No profile data found."));
           }
           var userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
@@ -239,7 +348,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 20),
                 _buildInfoBox(
                   "Name",
-                    "${userData['firstName'] ?? 'N/A'} ${userData['lastName'] ?? ''}",
+                  "${userData['firstName'] ?? 'N/A'} ${userData['lastName'] ??
+                      ''}",
                 ),
 
                 const SizedBox(height: 10),
@@ -331,12 +441,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
   Widget _buildInfoBox(String title, String value) {
+    final bool isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey.shade800 : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -348,9 +462,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              )
+          ),
           const SizedBox(height: 10),
-          Text(value, style: const TextStyle(fontSize: 16, color: Colors.black87)),
+          Text(
+              value,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: isDarkMode ? Colors.white70 : Colors.black87
+              )
+          ),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Add this import
 import 'package:new_project/feedback.dart';
 import 'user_type_selection.dart';
 import 'message.dart';
@@ -21,7 +22,12 @@ Future<void> main() async {
       print("Firebase already initialized: $e");
     }
   }
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,13 +35,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'Tutorly',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.purple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        brightness: Brightness.light,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.purple,
+        brightness: Brightness.dark,
+      ),
+      themeMode: themeProvider.themeMode,
       home: const HomePage(),
       routes: {
         'login': (context) => const MyLogin(),
@@ -45,9 +58,20 @@ class MyApp extends StatelessWidget {
         'profile': (context) => const ProfilePage(),
         'settings': (context) => const SettingsPage(),
         'notifications': (context) => const NotificationsPage(),
-        'message' : (context) => const MessagePage(),
-        'feedback' : (context) => const FeedbackPage(),
+        'message': (context) => const MessagePage(),
+        'feedback': (context) => const FeedbackPage(),
       },
     );
+  }
+}
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
   }
 }

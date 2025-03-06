@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'main.dart';
+import 'package:provider/provider.dart';
 import 'feedC.dart';
 import 'profile.dart';
 import 'package:flutter/foundation.dart';
@@ -95,43 +97,72 @@ class _FeedScreenState extends State<FeedScreen> {
         return Align(
           alignment: Alignment.centerRight,
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.65,
-            height: MediaQuery.of(context).size.height,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.65,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height,
+            decoration: BoxDecoration(
+              color: Theme
+                  .of(context)
+                  .brightness == Brightness.dark
+                  ? Colors.black
+                  : Colors.white,
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 5,
-                  offset: Offset(-2, 0), // Shadow on the left
+                  offset: Offset(-2, 0),
                 ),
               ],
             ),
             child: Column(
               children: [
-                // Back Button at the Top
                 Container(
                   alignment: Alignment.centerLeft,
-                  color: Colors.lightBlue.shade50,
+                  color: Theme
+                      .of(context)
+                      .brightness == Brightness.dark
+                      ? Colors.grey.shade900
+                      : Colors.lightBlue.shade50,
                   padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                    icon: Icon(Icons.arrow_back,
+                        color: Theme
+                            .of(context)
+                            .brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.blue),
                     onPressed: () {
-                      Navigator.pop(context); // Close the sidebar
+                      Navigator.pop(context);
                     },
                   ),
                 ),
-                // Sidebar Items
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.symmetric(
                         vertical: 10, horizontal: 10),
                     children: [
                       ListTile(
-                        leading:
-                        const Icon(Icons.logout, color: Colors.blueAccent),
-                        title: const Text("Logout"),
+                        leading: Icon(Icons.logout,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blueAccent),
+                        title: Text("Logout",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'login');
                         },
@@ -143,30 +174,88 @@ class _FeedScreenState extends State<FeedScreen> {
                           width: 24,
                           height: 24,
                         ),
-                        title: const Text("Settings"),
+                        title: Text("Settings",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'settings');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading:
-                        Image.asset('lib/icons/sidebar_feedback.png',
+                        leading: Image.asset(
+                          'lib/icons/sidebar_feedback.png',
                           height: 24,
                           width: 24,
                         ),
-                        title: const Text("Feedback"),
+                        title: Text("Feedback",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'feedback');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: const Icon(Icons.info, color: Colors.blue),
-                        title: const Text("About"),
-                        onTap: () {
-                          // Navigate to about
-                        },
+                        leading: Icon(
+                          Icons.dark_mode,
+                          color: Theme
+                              .of(context)
+                              .iconTheme
+                              .color,
+                        ),
+                        title: Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            color: Theme
+                                .of(context)
+                                .brightness ==
+                                Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: Provider
+                              .of<ThemeProvider>(context)
+                              .themeMode ==
+                              ThemeMode.dark,
+                          onChanged: (value) {
+                            Provider.of<ThemeProvider>(context, listen: false)
+                                .toggleTheme();
+                          },
+                        ),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(Icons.info,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blue),
+                        title: Text("About",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
+                        onTap: () {},
                       ),
                     ],
                   ),
@@ -182,16 +271,22 @@ class _FeedScreenState extends State<FeedScreen> {
   String formatTimestamp(dynamic timestamp) {
     if (timestamp is Timestamp) {
       DateTime dateTime = timestamp.toDate();
-      return "${dateTime.day}-${dateTime.month}-${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
+      return "${dateTime.day}-${dateTime.month}-${dateTime.year} ${dateTime
+          .hour}:${dateTime.minute}";
     }
     return "Invalid Date";
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     return Scaffold(
+      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF0F8FF),
       appBar: AppBar(
-          automaticallyImplyLeading: false, // Disable the back button
+          automaticallyImplyLeading: false,
+          // Disable the back button
           toolbarHeight: kToolbarHeight,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
@@ -272,8 +367,10 @@ class _FeedScreenState extends State<FeedScreen> {
               const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
               padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
-                color: Colors
-                    .lightBlue.shade50, // Background color for the filter tray
+                color: isDarkMode ? Colors.grey
+                    .shade900 // Dark gray background for the filter tray
+                    : Colors.lightBlue.shade50,
+                // Background color for the filter tray
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
@@ -296,27 +393,41 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDarkMode
+                                ? Colors.grey
+                                .shade800 // Dark gray for filter boxes
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
                             value: feedController.selectedArea,
-                            hint: const Row(
+                            hint: Row(
                               children: [
                                 SizedBox(width: 5),
-                                Text('Select Area'),
+                                Text('Select Area',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors
+                                        .black,
+                                  ),
+                                )
                               ],
                             ),
                             icon: Image.asset(
                               'lib/icons/dropdown.png',
                               height: 10,
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                             decoration:
                             const InputDecoration.collapsed(hintText: ''),
                             items: feedController.areas.map((area) {
                               return DropdownMenuItem(
                                 value: area,
-                                child: Text(area),
+                                child: Text(area,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors
+                                        .black,
+                                  ),
+                                ),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -332,27 +443,40 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDarkMode
+                                ? Colors.grey.shade800
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
                             value: feedController.selectedGrade,
-                            hint: const Row(
+                            hint: Row(
                               children: [
-                                SizedBox(width: 5),
-                                Text('Select Class'),
+                                const SizedBox(width: 5),
+                                Text('Select Class',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors
+                                        .black,
+                                  ),
+                                ),
                               ],
                             ),
                             icon: Image.asset(
                               'lib/icons/dropdown.png',
                               height: 10,
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                             decoration:
                             const InputDecoration.collapsed(hintText: ''),
                             items: feedController.grades.map((grade) {
                               return DropdownMenuItem(
                                 value: grade,
-                                child: Text(grade),
+                                child: Text(grade,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors
+                                        .black,
+                                  ),
+                                ),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -374,7 +498,8 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDarkMode ? Colors.grey.shade800 : Colors
+                                .white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: InkWell(
@@ -383,21 +508,40 @@ class _FeedScreenState extends State<FeedScreen> {
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    title: const Text('Select Subjects'),
+                                    backgroundColor: isDarkMode ? Colors.grey
+                                        .shade900 : Colors.white,
+                                    title: Text('Select Subjects',
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     content: StatefulBuilder(
                                       builder: (context, setDialogState) {
                                         return Column(
                                           mainAxisSize: MainAxisSize.min,
-                                          children: feedController.subjects.map((subject) {
+                                          children: feedController.subjects
+                                              .map((subject) {
                                             return CheckboxListTile(
-                                              title: Text(subject),
-                                              value: feedController.selectedSubjects.contains(subject),
+                                              title: Text(subject,
+                                                style: TextStyle(
+                                                  color: isDarkMode ? Colors
+                                                      .white : Colors.black,
+                                                ),
+                                              ),
+                                              value: feedController
+                                                  .selectedSubjects.contains(
+                                                  subject),
                                               onChanged: (bool? selected) {
                                                 setDialogState(() {
                                                   if (selected == true) {
-                                                    feedController.selectedSubjects.add(subject);
+                                                    feedController
+                                                        .selectedSubjects.add(
+                                                        subject);
                                                   } else {
-                                                    feedController.selectedSubjects.remove(subject);
+                                                    feedController
+                                                        .selectedSubjects
+                                                        .remove(subject);
                                                   }
                                                 });
                                               },
@@ -409,14 +553,24 @@ class _FeedScreenState extends State<FeedScreen> {
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: const Text('Cancel'),
+                                        child: Text('Cancel',
+                                          style: TextStyle(
+                                            color: isDarkMode ? Colors.grey
+                                                .shade300 : Colors.blue,
+                                          ),
+                                        ),
                                       ),
                                       TextButton(
                                         onPressed: () {
                                           setState(() {}); // Update UI after selection
                                           Navigator.pop(context);
                                         },
-                                        child: const Text('OK'),
+                                        child: Text('OK',
+                                          style: TextStyle(
+                                            color: isDarkMode ? Colors.grey
+                                                .shade300 : Colors.blue,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   );
@@ -430,8 +584,12 @@ class _FeedScreenState extends State<FeedScreen> {
                                   child: Text(
                                     feedController.selectedSubjects.isEmpty
                                         ? 'Select Subjects'
-                                        : feedController.selectedSubjects.join(', '),
-                                    style: const TextStyle(fontSize: 16),
+                                        : feedController.selectedSubjects.join(
+                                        ', '),
+                                    style: TextStyle(fontSize: 16,
+                                        color: isDarkMode
+                                            ? Colors.white
+                                            : Colors.black),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
@@ -440,6 +598,8 @@ class _FeedScreenState extends State<FeedScreen> {
                                 Image.asset(
                                   'lib/icons/dropdown.png',
                                   height: 10,
+                                  color: isDarkMode ? Colors.white : Colors
+                                      .black,
                                 ),
                               ],
                             ),
@@ -452,27 +612,36 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                          color: isDarkMode ? Colors.grey[850] : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
                             value: feedController.selectedGender,
-                            hint: const Row(
+                            hint: Row(
                               children: [
                                 SizedBox(width: 5),
-                                Text('Select Gender'),
+                                Text('Select Gender',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
                               ],
                             ),
                             icon: Image.asset(
                               'lib/icons/dropdown.png',
                               height: 10,
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                             decoration:
                             const InputDecoration.collapsed(hintText: ''),
                             items: feedController.genders.map((gender) {
                               return DropdownMenuItem(
                                 value: gender,
-                                child: Text(gender),
+                                child: Text(gender,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -494,27 +663,36 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDarkMode ? Colors.grey[850] : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
                             value: feedController.selectedVersion,
-                            hint: const Row(
+                            hint: Row(
                               children: [
                                 SizedBox(width: 5),
-                                Text('Select Version/Medium'),
+                                Text('Select Version/Medium',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
                               ],
                             ),
                             icon: Image.asset(
                               'lib/icons/dropdown.png',
                               height: 10,
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                             decoration:
                             const InputDecoration.collapsed(hintText: ''),
                             items: feedController.versions.map((version) {
                               return DropdownMenuItem(
                                 value: version,
-                                child: Text(version),
+                                child: Text(version,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -539,7 +717,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 8),
@@ -600,33 +778,41 @@ class _FeedScreenState extends State<FeedScreen> {
                     feedController.selectedGrade != null ||
                     (feedController.selectedSubjects.isNotEmpty) ||
                     feedController.selectedGender != null ||
-                  feedController.selectedVersion != null) {
-
+                    feedController.selectedVersion != null) {
                   filteredDocs = filteredDocs.where((doc) {
-                    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                    Map<String, dynamic> data = doc.data() as Map<
+                        String,
+                        dynamic>;
 
                     bool areaMatch = feedController.selectedArea == null ||
                         data['area'] == feedController.selectedArea;
 
                     bool gradeMatch = feedController.selectedGrade == null ||
                         data['grade'] == feedController.selectedGrade;
-                    bool subjectMatch = feedController.selectedSubjects.isEmpty ||
+                    bool subjectMatch = feedController.selectedSubjects
+                        .isEmpty ||
                         (data['subject'] is List
-                            ? (data['subject'] as List).any((subject) => feedController.selectedSubjects.contains(subject.toString()))
-                            : feedController.selectedSubjects.contains(data['subject']?.toString() ?? ""));
+                            ? (data['subject'] as List).any((subject) =>
+                            feedController.selectedSubjects.contains(
+                                subject.toString()))
+                            : feedController.selectedSubjects.contains(
+                            data['subject']?.toString() ?? ""));
                     bool genderMatch = feedController.selectedGender == null ||
                         data['gender'] == feedController.selectedGender ||
                         data['gender'] == 'Any';
 
-                    bool versionMatch = feedController.selectedVersion == null ||
+                    bool versionMatch = feedController.selectedVersion ==
+                        null ||
                         data['version'] == feedController.selectedVersion;
 
-                    return areaMatch && gradeMatch && subjectMatch && genderMatch && versionMatch;
+                    return areaMatch && gradeMatch && subjectMatch &&
+                        genderMatch && versionMatch;
                   }).toList();
                 }
 
                 return GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
@@ -639,7 +825,11 @@ class _FeedScreenState extends State<FeedScreen> {
                     var postData = doc.data() as Map<String, dynamic>;
 
                     return Card(
-                      color: Colors.lightBlue.shade50,
+                      color: Theme
+                          .of(context)
+                          .brightness == Brightness.dark
+                          ? Colors.grey.shade800
+                          : Colors.lightBlue.shade50,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -653,12 +843,15 @@ class _FeedScreenState extends State<FeedScreen> {
                                 CircleAvatar(
                                   radius: 16,
                                   backgroundColor: Colors.blue.shade100,
-                                  child: Icon(Icons.person, color: Colors.white, size: 20),
+                                  child: const Icon(
+                                      Icons.person, color: Colors.white,
+                                      size: 20),
                                 ),
                                 const SizedBox(width: 6),
-                                Expanded( // Prevents overflow in Row
+                                Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start,
                                     children: [
                                       Text(
                                         postData['creatorName'] ?? 'Unknown',
@@ -666,13 +859,15 @@ class _FeedScreenState extends State<FeedScreen> {
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                         ),
-                                        overflow: TextOverflow.ellipsis, // Prevents text overflow
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         postData['timestamp'] != null
-                                            ? formatTimestamp(postData['timestamp'])
+                                            ? formatTimestamp(
+                                            postData['timestamp'])
                                             : 'Unknown Time',
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.grey),
                                       ),
                                     ],
                                   ),
@@ -689,7 +884,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                 fontSize: 16,
                               ),
                               maxLines: 2,
-                              overflow: TextOverflow.ellipsis, // Prevents overflow
+                              overflow: TextOverflow.ellipsis,
                             ),
 
                             const SizedBox(height: 5),
@@ -697,7 +892,14 @@ class _FeedScreenState extends State<FeedScreen> {
                             Expanded(
                               child: Text(
                                 postData['description'] ?? 'No Description',
-                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme
+                                        .of(context)
+                                        .brightness == Brightness.dark
+                                        ? Colors.grey.shade300
+                                        : Colors.black54
+                                ),
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -714,7 +916,8 @@ class _FeedScreenState extends State<FeedScreen> {
                                 int hiddenCount = 0;
 
                                 void addChip(Widget chip, double chipWidth) {
-                                  if (usedWidth + chipWidth + moreChipWidth > availableWidth) {
+                                  if (usedWidth + chipWidth + moreChipWidth >
+                                      availableWidth) {
                                     hiddenCount++;
                                   } else {
                                     visibleChips.add(chip);
@@ -723,10 +926,12 @@ class _FeedScreenState extends State<FeedScreen> {
                                 }
 
                                 if (postData['subject'] is List) {
-                                  List<String> subjects = List<String>.from(postData['subject']);
+                                  List<String> subjects = List<String>.from(
+                                      postData['subject']);
                                   if (subjects.isNotEmpty) {
                                     addChip(
-                                      _buildInfoChip(subjects.first, Colors.orange.shade100),
+                                      _buildInfoChip(subjects.first,
+                                          Colors.orange.shade100),
                                       subjects.first.length * 1.0,
                                     );
                                   }
@@ -737,19 +942,32 @@ class _FeedScreenState extends State<FeedScreen> {
 
                                 // Other chips
                                 final List<MapEntry<String, Color>> chipData = [
-                                  MapEntry(postData['grade'] ?? 'Grade', Colors.green.shade100),
-                                  MapEntry(postData['version'] ?? 'Version', Colors.teal.shade100),
-                                  MapEntry(postData['area'] ?? 'Area', Colors.blue.shade100),
-                                  MapEntry(postData['gender'] ?? 'Gender', Colors.indigoAccent.shade100),
+                                  MapEntry(postData['grade'] ?? 'Grade',
+                                      isDarkMode
+                                          ? Colors.green.shade300
+                                          : Colors.green.shade100),
+                                  MapEntry(postData['version'] ?? 'Version',
+                                      isDarkMode ? Colors.teal.shade300 : Colors
+                                          .teal.shade200),
+                                  MapEntry(postData['area'] ?? 'Area',
+                                      isDarkMode ? Colors.blue.shade300 : Colors.blue.shade100),
+                                  MapEntry(postData['gender'] ?? 'Gender',
+                                      isDarkMode ? Colors.purple.shade300 : Colors.purple.shade100),
                                 ];
 
                                 for (var entry in chipData) {
-                                  addChip(_buildInfoChip(entry.key, entry.value), entry.key.length * 2.0);
+                                  addChip(
+                                      _buildInfoChip(entry.key, entry.value),
+                                      entry.key.length * 2.0);
                                 }
 
                                 // Add "+X more" chip if any were hidden
                                 if (hiddenCount > 0) {
-                                  visibleChips.add(_buildInfoChip("+$hiddenCount more", Colors.orange.shade100));
+                                  visibleChips.add(_buildInfoChip(
+                                      "+$hiddenCount more", isDarkMode
+                                      ? Colors.orange.shade300
+                                      : Colors.orange
+                                      .shade100));
                                 }
 
                                 return Wrap(
@@ -760,6 +978,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               },
                             ),
                             const SizedBox(height: 15),
+
                             /// view details Button
                             SizedBox(
                               width: double.infinity,
@@ -768,14 +987,17 @@ class _FeedScreenState extends State<FeedScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DetailsPage(postData: postData, postId: doc.id),
+                                      builder: (context) =>
+                                          DetailsPage(postData: postData,
+                                              postId: doc.id),
                                     ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
                                   textStyle: const TextStyle(fontSize: 12),
                                 ),
                                 child: const Text('View Details'),
@@ -783,7 +1005,6 @@ class _FeedScreenState extends State<FeedScreen> {
                             ),
                           ],
                         ),
-
                       ),
                     );
                   },
@@ -794,7 +1015,8 @@ class _FeedScreenState extends State<FeedScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Consistent alignment
+        type: BottomNavigationBarType.fixed,
+        // Consistent alignment
         currentIndex: selectedIndex == -1 ? 0 : selectedIndex,
         onTap: (index) {
           setState(() {
@@ -872,7 +1094,10 @@ class _FeedScreenState extends State<FeedScreen> {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 10),
+        style: const TextStyle(
+          fontSize: 10,
+          color: Colors.black, // Sets the text color to black
+        ),
       ),
     );
   }

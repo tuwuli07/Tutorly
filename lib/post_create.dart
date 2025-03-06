@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:provider/provider.dart';
+import 'main.dart';
 import 'profile.dart';
 import 'post_create_c.dart';
 
@@ -79,9 +81,11 @@ class _CreatePostPageState extends State<CreatePostPage> {
           child: Container(
             width: MediaQuery.of(context).size.width * 0.65,
             height: MediaQuery.of(context).size.height,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black
+                  : Colors.white,
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 5,
@@ -93,10 +97,16 @@ class _CreatePostPageState extends State<CreatePostPage> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  color: Colors.lightBlue.shade50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade900
+                      : Colors.lightBlue.shade50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                    icon: Icon(Icons.arrow_back,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.blue),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -104,11 +114,21 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.blueAccent),
-                        title: const Text("Logout"),
+                        leading: Icon(Icons.logout,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blueAccent),
+                        title: Text("Logout",
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'login');
                         },
@@ -120,23 +140,73 @@ class _CreatePostPageState extends State<CreatePostPage> {
                           width: 24,
                           height: 24,
                         ),
-                        title: const Text("Settings"),
+                        title: Text("Settings",
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'settings');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: Image.asset('lib/icons/sidebar_feedback.png', height: 24, width: 24),
-                        title: const Text("Feedback"),
+                        leading: Image.asset(
+                          'lib/icons/sidebar_feedback.png',
+                          height: 24,
+                          width: 24,
+                        ),
+                        title: Text("Feedback",
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'feedback');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: const Icon(Icons.info, color: Colors.blue),
-                        title: const Text("About"),
+                        leading: Icon(
+                          Icons.dark_mode,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        title: Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            color: Theme.of(context).brightness ==
+                                Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: Provider.of<ThemeProvider>(context)
+                              .themeMode ==
+                              ThemeMode.dark,
+                          onChanged: (value) {
+                            Provider.of<ThemeProvider>(context, listen: false)
+                                .toggleTheme();
+                          },
+                        ),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(Icons.info,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blue),
+                        title: Text("About",
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {},
                       ),
                     ],
@@ -152,8 +222,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
+      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF0F8FF),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: kToolbarHeight,
@@ -222,22 +293,41 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         items: postController.subjects
                             .map((subject) => MultiSelectItem<String>(subject, subject))
                             .toList(),
-                        title: const Text("Select Subjects"),
-                        buttonText: Text("Select Subjects",
-                          style: TextStyle(color: Colors.grey.shade800, fontSize: 15.5),
+                        title: Text(
+                          "Select Subjects",
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        selectedColor: Colors.blue.shade700,
-                        backgroundColor: Colors.white,
+                        buttonText: Text(
+                          "Select Subjects",
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.grey.shade800,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15.5,
+                          ),
+                        ),
+                        selectedColor: isDarkMode ? Colors.blue.shade300 : Colors.blue.shade700,
+                        backgroundColor: isDarkMode ? Colors.grey.shade900 : Colors.white,
                         initialValue: postController.selectedSubjects,
                         onConfirm: (values) {
                           setState(() => postController.selectedSubjects = values);
                         },
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey.shade400),
+                        itemsTextStyle: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
                         ),
-                        buttonIcon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade700),
+                        decoration: BoxDecoration(
+                          color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDarkMode ? Colors.grey.shade600 : Colors.grey.shade400,
+                          ),
+                        ),
+                        buttonIcon: Icon(
+                          Icons.arrow_drop_down,
+                          color: isDarkMode ? Colors.white : Colors.grey.shade700,
+                        ),
                       ),
                     ),
                     buildFilterDropdown("Select Gender", postController.genders, (value) {
@@ -338,20 +428,31 @@ class _CreatePostPageState extends State<CreatePostPage> {
   }
 
   Widget buildFilterDropdown(String hint, List<String> options, ValueChanged<String?> onChanged) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey.shade800 : Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400),
+        border: Border.all(color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400),
       ),
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration.collapsed(hintText: ''),
-        hint: Text(hint),
-        items: options.map((option) => DropdownMenuItem(value: option, child: Text(option))).toList(),
+        hint: Text(
+          hint,
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        ),
+        dropdownColor: isDarkMode ? Colors.grey.shade900 : Colors.white,
+        items: options.map((option) => DropdownMenuItem(
+          value: option,
+          child: Text(
+            option,
+            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          ),
+        )).toList(),
         onChanged: onChanged,
       ),
     );
   }
-}
+  }
