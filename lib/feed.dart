@@ -283,55 +283,49 @@ class _FeedScreenState extends State<FeedScreen> {
         .of(context)
         .brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF0F8FF),
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-          // Disable the back button
-          toolbarHeight: kToolbarHeight,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/icons/banner_top.png'),
-                fit: BoxFit.cover,
-              ),
+        automaticallyImplyLeading: false,
+        toolbarHeight: kToolbarHeight,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        surfaceTintColor: isDarkMode ? Colors.black : Colors.white,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              isDarkMode? 'lib/icons/appbar_logo_dark.png' : 'lib/icons/appbar_logo.png',
+              height: 38,
             ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Image.asset(
+              'lib/icons/profile.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: () {
+              // Navigate to ProfilePage wrapped with Provider
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
           ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset(
-                'lib/icons/logo.png', // Replace with your logo image
-                height: 40,
-              ),
-              //const SizedBox(width: 10),
-            ],
+          IconButton(
+            icon: Image.asset(
+              isDarkMode? 'lib/icons/sidebar.png': 'lib/icons/sidebar_selected.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: openSidebar,
           ),
-          actions: [
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/profile.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () {
-                // Navigate to ProfilePage wrapped with Provider
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/sidebar.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: openSidebar,
-            ),
-          ]),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -339,10 +333,11 @@ class _FeedScreenState extends State<FeedScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Find Tuition',
+                Text(
+                  'Find Tuitions',
                   style: TextStyle(
-                    color: Colors.indigo,
+                    color: isDarkMode ? Colors.white
+                        : Colors.indigo.shade900,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -354,7 +349,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                   onPressed: () {
                     setState(() {
-                      showFilters = !showFilters; // Toggle filter tray
+                      showFilters = !showFilters;
                     });
                   },
                 ),
@@ -368,7 +363,7 @@ class _FeedScreenState extends State<FeedScreen> {
               padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.grey
-                    .shade900 // Dark gray background for the filter tray
+                    .shade900
                     : Colors.lightBlue.shade50,
                 // Background color for the filter tray
                 borderRadius: BorderRadius.circular(8),
@@ -612,7 +607,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.grey[850] : Colors.white,
+                          color: isDarkMode ? Colors.grey[800] : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
@@ -663,7 +658,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: isDarkMode ? Colors.grey[850] : Colors.white,
+                            color: isDarkMode ? Colors.grey.shade800 : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: DropdownButtonFormField<String>(
@@ -717,7 +712,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 8),
@@ -841,11 +836,11 @@ class _FeedScreenState extends State<FeedScreen> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  radius: 16,
+                                  radius: 10,
                                   backgroundColor: Colors.blue.shade100,
                                   child: const Icon(
                                       Icons.person, color: Colors.white,
-                                      size: 20),
+                                      size: 18),
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
@@ -1015,6 +1010,7 @@ class _FeedScreenState extends State<FeedScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: isDarkMode? Colors.black: Colors.white,
         type: BottomNavigationBarType.fixed,
         // Consistent alignment
         currentIndex: selectedIndex == -1 ? 0 : selectedIndex,

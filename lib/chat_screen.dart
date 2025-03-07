@@ -16,6 +16,7 @@ class ChatScreenState extends State<ChatScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
   final TextEditingController _messageController = TextEditingController();
   Map<String, dynamic>? chatPartnerData;
+  bool isDarkMode = false;
 
   @override
   void initState() {
@@ -144,6 +145,9 @@ class ChatScreenState extends State<ChatScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     String studentName = widget.chatData['studentName'] ?? "Unknown Student";
     String tutorName = widget.chatData['tutorName'] ?? "Unknown Tutor";
 
@@ -184,7 +188,7 @@ class ChatScreenState extends State<ChatScreen> {
       ),
       endDrawer: Drawer(
         child: Container(
-          color: Colors.white,
+          color: isDarkMode? Colors.grey.shade900 : Colors.white,
           child: chatPartnerData == null
               ? const Center(child: CircularProgressIndicator())
               : Padding(
@@ -200,8 +204,6 @@ class ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Function to create white-boxed text fields
                 buildInfoBox("Username", chatPartnerData!['username'] ?? 'Unknown'),
                 buildInfoBox("Name", chatPartnerData!['fullName'] ?? 'Unknown'),
                 buildInfoBox("Bio", chatPartnerData!['description'] ?? 'Unknown'),
@@ -322,7 +324,7 @@ class ChatScreenState extends State<ChatScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode? Colors.grey.shade800: Colors.white,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -335,7 +337,7 @@ class ChatScreenState extends State<ChatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDarkMode? Colors.white: Colors.grey)),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontSize: 16)),
           ],

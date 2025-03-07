@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'main.dart';
 import 'profile.dart';
 import 'chat_screen.dart';
 
@@ -19,6 +21,7 @@ class _DetailsPageState extends State<DetailsPage> {
   String postTimestamp = "Unknown Time";
   bool hasApplied = false;
   String chatId = "";
+  bool isDarkMode = false;
 
   @override
   void initState() {
@@ -136,11 +139,21 @@ class _DetailsPageState extends State<DetailsPage> {
         return Align(
           alignment: Alignment.centerRight,
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.65,
-            height: MediaQuery.of(context).size.height,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.65,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height,
+            decoration: BoxDecoration(
+              color: Theme
+                  .of(context)
+                  .brightness == Brightness.dark
+                  ? Colors.black
+                  : Colors.white,
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 5,
@@ -152,10 +165,20 @@ class _DetailsPageState extends State<DetailsPage> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  color: Colors.lightBlue.shade50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  color: Theme
+                      .of(context)
+                      .brightness == Brightness.dark
+                      ? Colors.grey.shade900
+                      : Colors.lightBlue.shade50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                    icon: Icon(Icons.arrow_back,
+                        color: Theme
+                            .of(context)
+                            .brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.blue),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -163,11 +186,25 @@ class _DetailsPageState extends State<DetailsPage> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.blueAccent),
-                        title: const Text("Logout"),
+                        leading: Icon(Icons.logout,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blueAccent),
+                        title: Text("Logout",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'login');
                         },
@@ -179,23 +216,87 @@ class _DetailsPageState extends State<DetailsPage> {
                           width: 24,
                           height: 24,
                         ),
-                        title: const Text("Settings"),
+                        title: Text("Settings",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'settings');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: Image.asset('lib/icons/sidebar_feedback.png', height: 24, width: 24),
-                        title: const Text("Feedback"),
+                        leading: Image.asset(
+                          'lib/icons/sidebar_feedback.png',
+                          height: 24,
+                          width: 24,
+                        ),
+                        title: Text("Feedback",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {
                           Navigator.pushReplacementNamed(context, 'feedback');
                         },
                       ),
                       const Divider(),
                       ListTile(
-                        leading: const Icon(Icons.info, color: Colors.blue),
-                        title: const Text("About"),
+                        leading: Icon(
+                          Icons.dark_mode,
+                          color: Theme
+                              .of(context)
+                              .iconTheme
+                              .color,
+                        ),
+                        title: Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            color: Theme
+                                .of(context)
+                                .brightness ==
+                                Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: Provider
+                              .of<ThemeProvider>(context)
+                              .themeMode ==
+                              ThemeMode.dark,
+                          onChanged: (value) {
+                            Provider.of<ThemeProvider>(context, listen: false)
+                                .toggleTheme();
+                          },
+                        ),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(Icons.info,
+                            color: Theme
+                                .of(context)
+                                .brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.blue),
+                        title: Text("About",
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            )),
                         onTap: () {},
                       ),
                     ],
@@ -284,54 +385,52 @@ class _DetailsPageState extends State<DetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-          automaticallyImplyLeading: false, // Disable the back button
-          toolbarHeight: kToolbarHeight,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/icons/banner_top.png'),
-                fit: BoxFit.cover,
-              ),
+        automaticallyImplyLeading: false,
+        toolbarHeight: kToolbarHeight,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        surfaceTintColor: isDarkMode ? Colors.black : Colors.white,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              isDarkMode? 'lib/icons/appbar_logo_dark.png' : 'lib/icons/appbar_logo.png',
+              height: 38,
             ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Image.asset(
+              'lib/icons/profile.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: () {
+              // Navigate to ProfilePage wrapped with Provider
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
           ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset(
-                'lib/icons/logo.png', // Replace with your logo image
-                height: 40,
-              ),
-              //const SizedBox(width: 10),
-            ],
+          IconButton(
+            icon: Image.asset(
+              isDarkMode? 'lib/icons/sidebar.png': 'lib/icons/sidebar_selected.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: openSidebar,
           ),
-          actions: [
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/profile.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () {
-                // Navigate to ProfilePage wrapped with Provider
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/sidebar.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: openSidebar,
-            ),
-          ]),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -379,6 +478,7 @@ class _DetailsPageState extends State<DetailsPage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: isDarkMode? Colors.black: Colors.white,
         type: BottomNavigationBarType.fixed, // Consistent alignment
         currentIndex: selectedIndex == -1 ? 0 : selectedIndex,
         onTap: (index) {

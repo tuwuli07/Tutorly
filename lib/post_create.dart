@@ -228,32 +228,41 @@ class _CreatePostPageState extends State<CreatePostPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: kToolbarHeight,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('lib/icons/banner_top.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        surfaceTintColor: isDarkMode ? Colors.black : Colors.white,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('lib/icons/logo.png', height: 40),
+            Image.asset(
+              isDarkMode? 'lib/icons/appbar_logo_dark.png' : 'lib/icons/appbar_logo.png',
+              height: 38,
+            ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Image.asset('lib/icons/profile.png', width: 24, height: 24),
+            icon: Image.asset(
+              'lib/icons/profile.png',
+              width: 24,
+              height: 24,
+            ),
             onPressed: () {
+              // Navigate to ProfilePage wrapped with Provider
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
               );
             },
           ),
           IconButton(
-            icon: Image.asset('lib/icons/sidebar.png', width: 24, height: 24),
+            icon: Image.asset(
+              isDarkMode? 'lib/icons/sidebar.png': 'lib/icons/sidebar_selected.png',
+              width: 24,
+              height: 24,
+            ),
             onPressed: openSidebar,
           ),
         ],
@@ -358,6 +367,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: isDarkMode? Colors.black: Colors.white,
         type: BottomNavigationBarType.fixed, // Consistent alignment
         currentIndex: selectedIndex == -1 ? 0 : selectedIndex,
         onTap: (index) {

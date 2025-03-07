@@ -226,53 +226,48 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF0F8FF),
-      appBar: AppBar (
-          automaticallyImplyLeading: false, // Disable the back button
-          toolbarHeight: kToolbarHeight,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/icons/banner_top.png'),
-                fit: BoxFit.cover,
-              ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        toolbarHeight: kToolbarHeight,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        surfaceTintColor: isDarkMode ? Colors.black : Colors.white,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              isDarkMode? 'lib/icons/appbar_logo_dark.png' : 'lib/icons/appbar_logo.png',
+              height: 38,
             ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Image.asset(
+              'lib/icons/profile.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: () {
+              // Navigate to ProfilePage wrapped with Provider
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
           ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset(
-                'lib/icons/logo.png', // Replace with your logo image
-                height: 40,
-              ),
-              //const SizedBox(width: 10),
-            ],
+          IconButton(
+            icon: Image.asset(
+              isDarkMode? 'lib/icons/sidebar.png': 'lib/icons/sidebar_selected.png',
+              width: 24,
+              height: 24,
+            ),
+            onPressed: openSidebar,
           ),
-          actions: [
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/profile.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () {
-                // Navigate to ProfilePage wrapped with Provider
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: Image.asset(
-                'lib/icons/sidebar.png',
-                width: 24,
-                height: 24,
-              ),
-              onPressed: openSidebar,
-            ),
-          ]),
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: getNotifications(),
         builder: (context, snapshot) {
@@ -312,6 +307,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: isDarkMode? Colors.black: Colors.white,
         type: BottomNavigationBarType.fixed,
         currentIndex: selectedIndex == -1 ? 3 : selectedIndex,
         onTap: (index) {
