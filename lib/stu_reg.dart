@@ -68,14 +68,24 @@ class StuReg extends StatelessWidget {
       ) {
     return TextFormField(
       controller: controller,
+      style: TextStyle(color: Colors.grey.shade800), // Dark gray text for input
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.white),
+        labelStyle: TextStyle(color: Colors.grey.shade800), // Dark gray label text
+        prefixIcon: Icon(icon, color: Colors.grey.shade800), // Dark gray icon
         filled: true,
-        fillColor: Colors.white24,
+        fillColor: Colors.white, // White background
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300), // Light border
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Color(0xFF7F3FBF)), // Purple border when focused
         ),
       ),
       validator: (value) {
@@ -94,14 +104,24 @@ class StuReg extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: true,
+      style: TextStyle(color: Colors.grey.shade800), // Dark gray text for input
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(Icons.lock, color: Colors.white),
+        labelStyle: TextStyle(color: Colors.grey.shade800), // Dark gray label text
+        prefixIcon: Icon(Icons.lock, color: Colors.grey.shade800), // Dark gray icon
         filled: true,
-        fillColor: Colors.white24,
+        fillColor: Colors.white, // White background
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300), // Light border
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Color(0xFF7F3FBF)), // Purple border when focused
         ),
       ),
       validator: (value) {
@@ -118,6 +138,7 @@ class StuReg extends StatelessWidget {
       },
     );
   }
+
   Future<void> registerUser(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
 

@@ -20,6 +20,12 @@ class MyLoginState extends State<MyLogin> {
 
   @override
   Widget build(BuildContext context) {
+    // Check the current brightness mode
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // Define text colors based on theme
+    final Color textColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade800;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -87,11 +93,11 @@ class MyLoginState extends State<MyLogin> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                const Text(
+                                Text(
                                   "Select if you're\n a student/parent",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.white, // Keep white for gradient background
                                     fontSize: 14,
                                   ),
                                 ),
@@ -131,11 +137,11 @@ class MyLoginState extends State<MyLogin> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                const Text(
+                                Text(
                                   "Select if you're\n a teacher",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.white, // Keep white for gradient background
                                     fontSize: 14,
                                   ),
                                 ),
@@ -156,11 +162,20 @@ class MyLoginState extends State<MyLogin> {
                       children: [
                         TextFormField(
                           controller: loginC.emailController,
+                          style: TextStyle(
+                            color: textColor, // Apply theme-specific text color
+                          ),
                           decoration: InputDecoration(
                             fillColor: Color.fromRGBO(255, 255, 255, 0.9),
                             filled: true,
                             hintText: 'Email',
-                            prefixIcon: const Icon(Icons.email),
+                            hintStyle: TextStyle(
+                              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade800,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.email,
+                              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade800,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
@@ -172,11 +187,20 @@ class MyLoginState extends State<MyLogin> {
                         TextFormField(
                           controller: loginC.passwordController,
                           obscureText: true,
+                          style: TextStyle(
+                            color: textColor, // Apply theme-specific text color
+                          ),
                           decoration: InputDecoration(
                             fillColor: Color.fromRGBO(255, 255, 255, 0.9),
                             filled: true,
                             hintText: 'Password',
-                            prefixIcon: const Icon(Icons.lock),
+                            hintStyle: TextStyle(
+                              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade800,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.lock,
+                              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade800,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
@@ -229,7 +253,7 @@ class MyLoginState extends State<MyLogin> {
                             );
                           },
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
+                            foregroundColor: Colors.white, // Keep white for gradient background
                           ),
                           child: const Text(
                             "Don't have an account? Register here.",

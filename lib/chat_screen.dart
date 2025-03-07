@@ -16,7 +16,6 @@ class ChatScreenState extends State<ChatScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
   final TextEditingController _messageController = TextEditingController();
   Map<String, dynamic>? chatPartnerData;
-  bool isDarkMode = false;
 
   @override
   void initState() {
@@ -40,6 +39,7 @@ class ChatScreenState extends State<ChatScreen> {
       }
     });
   }
+
   void fetchChatPartnerDetails() async {
     String chatPartnerId = (user?.uid == widget.chatData['studentId'])
         ? widget.chatData['tutorId']
@@ -58,6 +58,7 @@ class ChatScreenState extends State<ChatScreen> {
       });
     }
   }
+
   Stream<QuerySnapshot> getMessages() {
     return FirebaseFirestore.instance
         .collection('messages')
@@ -143,11 +144,10 @@ class ChatScreenState extends State<ChatScreen> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    final bool isDarkMode = Theme
-        .of(context)
-        .brightness == Brightness.dark;
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     String studentName = widget.chatData['studentName'] ?? "Unknown Student";
     String tutorName = widget.chatData['tutorName'] ?? "Unknown Tutor";
 
@@ -170,25 +170,31 @@ class ChatScreenState extends State<ChatScreen> {
       );
     }
 
+    // Define colors based on theme
+    final Color myMessageBgColor = isDarkMode ? Colors.blue.shade700 : Colors.blue;
+    final Color myMessageTextColor = Colors.white;
+    final Color theirMessageBgColor = isDarkMode ? Colors.grey.shade800 : Colors.blue.shade50;
+    final Color theirMessageTextColor = isDarkMode ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(chatPartnerName),
         actions: [
           Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.account_circle_outlined, color: Colors.blue,),
-                onPressed: () {
-                  Scaffold.of(context).openEndDrawer();
-                },
-              );
-            }
+              builder: (context) {
+                return IconButton(
+                  icon: const Icon(Icons.account_circle_outlined, color: Colors.blue,),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                );
+              }
           ),
         ],
       ),
       endDrawer: Drawer(
         child: Container(
-          color: isDarkMode? Colors.grey.shade900 : Colors.white,
+          color: isDarkMode ? Colors.grey.shade900 : Colors.white,
           child: chatPartnerData == null
               ? const Center(child: CircularProgressIndicator())
               : Padding(
@@ -204,13 +210,13 @@ class ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                buildInfoBox("Username", chatPartnerData!['username'] ?? 'Unknown'),
-                buildInfoBox("Name", chatPartnerData!['fullName'] ?? 'Unknown'),
-                buildInfoBox("Bio", chatPartnerData!['description'] ?? 'Unknown'),
-                buildInfoBox("Email", chatPartnerData!['email'] ?? 'Not available'),
-                buildInfoBox("Phone Number", chatPartnerData!['phoneNumber'] ?? 'Not available'),
-                buildInfoBox("Address", chatPartnerData!['address'] ?? 'Not available'),
-                buildInfoBox("Education", chatPartnerData!['education'] ?? 'Not specified'),
+                buildInfoBox("Username", chatPartnerData!['username'] ?? 'Unknown', isDarkMode),
+                buildInfoBox("Name", chatPartnerData!['fullName'] ?? 'Unknown', isDarkMode),
+                buildInfoBox("Bio", chatPartnerData!['description'] ?? 'Unknown', isDarkMode),
+                buildInfoBox("Email", chatPartnerData!['email'] ?? 'Not available', isDarkMode),
+                buildInfoBox("Phone Number", chatPartnerData!['phoneNumber'] ?? 'Not available', isDarkMode),
+                buildInfoBox("Address", chatPartnerData!['address'] ?? 'Not available', isDarkMode),
+                buildInfoBox("Education", chatPartnerData!['education'] ?? 'Not specified', isDarkMode),
               ],
             ),
           ),
@@ -227,7 +233,14 @@ class ChatScreenState extends State<ChatScreen> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No messages yet"));
+                  return Center(
+                    child: Text(
+                      "No messages yet",
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  );
                 }
 
                 return ListView(
@@ -260,13 +273,15 @@ class ChatScreenState extends State<ChatScreen> {
                                     maxWidth: MediaQuery.of(context).size.width * 0.7,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isMe ? Colors.blue : Colors.blue[50],
+                                    color: isMe ? myMessageBgColor : theirMessageBgColor,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     message['text'],
                                     softWrap: true,
-                                    style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                                    style: TextStyle(
+                                      color: isMe ? myMessageTextColor : theirMessageTextColor,
+                                    ),
                                   ),
                                 ),
                                 Padding(
@@ -275,7 +290,10 @@ class ChatScreenState extends State<ChatScreen> {
                                     alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                                     child: Text(
                                       formattedTime,
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -303,7 +321,15 @@ class ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(hintText: "Type a message"),
+                    decoration: InputDecoration(
+                      hintText: "Type a message",
+                      hintStyle: TextStyle(
+                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -317,14 +343,15 @@ class ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-  Widget buildInfoBox(String label, String value) {
+
+  Widget buildInfoBox(String label, String value, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isDarkMode? Colors.grey.shade800: Colors.white,
+          color: isDarkMode ? Colors.grey.shade800 : Colors.white,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -337,9 +364,22 @@ class ChatScreenState extends State<ChatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDarkMode? Colors.white: Colors.grey)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white70 : Colors.grey,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
           ],
         ),
       ),
